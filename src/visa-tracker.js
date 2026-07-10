@@ -322,7 +322,7 @@ export function documentsPage(user, docs, flash) {
 export function feesPage(user) {
   const body = `
     <div class="vt-section-title">💰 VAC Fee Calculator</div>
-    <p class="vt-section-sub">Estimate your Visa Application Charge (as at 2025–26)</p>
+    <p class="vt-section-sub">Estimate your Visa Application Charge (as at 2026–27)</p>
 
     <div class="vt-card">
       <h3>Select Visa & Applicants</h3>
@@ -351,7 +351,7 @@ export function feesPage(user) {
         </div>
         <div id="vac-note" style="font-size:.82rem;color:#64748b"></div>
         <div style="font-size:.78rem;color:#94a3b8;margin-top:8px">
-          Figures in AUD. Fees current as at <strong>1 July 2025</strong> (2025–26 financial year).
+          Figures in AUD. Fees current as at <strong>1 July 2026</strong> (2026–27 financial year).
           Fees increase annually on 1 July — always
           <a href="https://immi.homeaffairs.gov.au/visas/getting-a-visa/fees-and-charges/current-visa-pricing" target="_blank" style="color:#1a5bb8">verify at homeaffairs.gov.au</a>
           before lodging.
@@ -433,7 +433,7 @@ export function occupationsPage(user, query) {
 export function stateCriteriaPage(user) {
   const body = `
     <div class="vt-section-title">🗺️ State Nomination Criteria</div>
-    <p class="vt-section-sub">Minimum points and key requirements for SC 190 and SC 491 by state/territory (2025–26)</p>
+    <p class="vt-section-sub">Minimum points and key requirements for SC 190 and SC 491 by state/territory (2026–27)</p>
 
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
       ${STATE_CRITERIA.map(s => `
@@ -468,7 +468,7 @@ export function stateCriteriaPage(user) {
 export function processingTimesPage(user) {
   const body = `
     <div class="vt-section-title">⏱️ Visa Processing Times</div>
-    <p class="vt-section-sub">Estimated processing times in months (percentile-based, 2025–26)</p>
+    <p class="vt-section-sub">Estimated processing times in months (percentile-based, 2026–27)</p>
 
     <div class="vt-card">
       <div class="proc-row proc-header" style="border-bottom:2px solid #e8f0fe;margin-bottom:4px">
@@ -586,7 +586,7 @@ export function studentFundPage(user) {
     </div>
 
     <div class="vt-card">
-      <h3>2025–26 Living Cost Figures (DHA)</h3>
+      <h3>2026–27 Living Cost Figures (DHA)</h3>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:.9rem">
         <div>Principal applicant: <strong>$${STUDENT_FUND.livingCostPerYear.toLocaleString()}/year</strong></div>
         <div>Partner: <strong>$${STUDENT_FUND.partnerPerYear.toLocaleString()}/year</strong></div>

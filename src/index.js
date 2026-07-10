@@ -25,6 +25,43 @@ app.use('*', async (c, next) => {
   await next();
 });
 
+// ── WordPress media proxy — serves /wp-content/* from origin host ────────────
+const WP_ORIGIN = '62.169.17.14';
+app.get('/wp-content/*', async c => {
+  const path = new URL(c.req.url).pathname + new URL(c.req.url).search;
+  const originUrl = `https://${WP_ORIGIN}${path}`;
+  const res = await fetch(originUrl, {
+    headers: {
+      'Host': 'careersgateway.com.au',
+      'User-Agent': 'Mozilla/5.0',
+    },
+    cf: { cacheTtl: 86400, cacheEverything: true },
+  }).catch(() => null);
+  if (!res || !res.ok) {
+    // Fallback: try HTTP
+    const httpRes = await fetch(`http://${WP_ORIGIN}${path}`, {
+      headers: { 'Host': 'careersgateway.com.au' },
+    }).catch(() => null);
+    if (!httpRes || !httpRes.ok) return c.notFound();
+    return new Response(httpRes.body, {
+      status: httpRes.status,
+      headers: {
+        'Content-Type': httpRes.headers.get('Content-Type') || 'application/octet-stream',
+        'Cache-Control': 'public, max-age=86400',
+        'Access-Control-Allow-Origin': '*',
+      },
+    });
+  }
+  return new Response(res.body, {
+    status: res.status,
+    headers: {
+      'Content-Type': res.headers.get('Content-Type') || 'application/octet-stream',
+      'Cache-Control': 'public, max-age=86400',
+      'Access-Control-Allow-Origin': '*',
+    },
+  });
+});
+
 // ── Auth middleware (attaches user to context) ──────────────────────────────
 app.use('*', async (c, next) => {
   c.set('user', await getCurrentUser(c.env, c));
