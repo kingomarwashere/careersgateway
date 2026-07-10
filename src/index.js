@@ -26,32 +26,15 @@ app.use('*', async (c, next) => {
 });
 
 // ── WordPress media proxy — serves /wp-content/* from origin host ────────────
+// Uses resolveOverride so TLS verifies against careersgateway.com.au (cert matches)
+// while the TCP connection goes directly to the LiteSpeed IP, bypassing the Worker loop.
 const WP_ORIGIN = '62.169.17.14';
 app.get('/wp-content/*', async c => {
-  const path = new URL(c.req.url).pathname + new URL(c.req.url).search;
-  const originUrl = `https://${WP_ORIGIN}${path}`;
-  const res = await fetch(originUrl, {
-    headers: {
-      'Host': 'careersgateway.com.au',
-      'User-Agent': 'Mozilla/5.0',
-    },
-    cf: { cacheTtl: 86400, cacheEverything: true },
+  const { pathname, search } = new URL(c.req.url);
+  const res = await fetch(`https://careersgateway.com.au${pathname}${search}`, {
+    cf: { resolveOverride: WP_ORIGIN, cacheTtl: 86400, cacheEverything: true },
   }).catch(() => null);
-  if (!res || !res.ok) {
-    // Fallback: try HTTP
-    const httpRes = await fetch(`http://${WP_ORIGIN}${path}`, {
-      headers: { 'Host': 'careersgateway.com.au' },
-    }).catch(() => null);
-    if (!httpRes || !httpRes.ok) return c.notFound();
-    return new Response(httpRes.body, {
-      status: httpRes.status,
-      headers: {
-        'Content-Type': httpRes.headers.get('Content-Type') || 'application/octet-stream',
-        'Cache-Control': 'public, max-age=86400',
-        'Access-Control-Allow-Origin': '*',
-      },
-    });
-  }
+  if (!res || !res.ok) return c.notFound();
   return new Response(res.body, {
     status: res.status,
     headers: {
