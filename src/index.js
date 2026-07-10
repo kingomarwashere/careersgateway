@@ -8,7 +8,8 @@ import {
 } from './templates.js';
 import {
   pointsPage, timelinePage, documentsPage, feesPage,
-  occupationsPage, stateCriteriaPage, processingTimesPage, englishPage, studentFundPage
+  occupationsPage, stateCriteriaPage, processingTimesPage, englishPage, studentFundPage,
+  dashboardOverview
 } from './visa-tracker.js';
 
 const app = new Hono();
@@ -111,10 +112,28 @@ app.get('/courses', async c => {
 app.get('/dashboard', async c => {
   const user = c.get('user');
   if (!user) return c.redirect('/login?redirect=/dashboard');
-  const { results } = await c.env.DB.prepare(
-    'SELECT * FROM inquiries WHERE user_id = ? ORDER BY created_at DESC LIMIT 20'
-  ).bind(user.id).all();
-  return c.html(dashboardPage(user, results));
+  const [inquiriesRes, profileRes, docsRes, timelineRes] = await Promise.all([
+    c.env.DB.prepare('SELECT * FROM inquiries WHERE user_id=? ORDER BY created_at DESC LIMIT 10').bind(user.id).all(),
+    c.env.DB.prepare('SELECT * FROM visa_profiles WHERE user_id=?').bind(user.id).first(),
+    c.env.DB.prepare('SELECT * FROM document_expiries WHERE user_id=? ORDER BY expiry_date ASC LIMIT 5').bind(user.id).all(),
+    c.env.DB.prepare('SELECT * FROM case_timelines WHERE user_id=?').bind(user.id).all(),
+  ]);
+  const { calcPoints } = await import('./visa-data.js');
+  const points = profileRes ? calcPoints(profileRes) : null;
+  const completedStages = (timelineRes.results||[]).filter(s => s.milestone_date).length;
+  const today = new Date();
+  const expiringDocs = (docsRes.results||[]).filter(d => {
+    const days = Math.round((new Date(d.expiry_date) - today) / 86400000);
+    return days <= 180;
+  });
+  return c.html(layout('Dashboard', dashboardOverview(user, {
+    inquiries: inquiriesRes.results||[],
+    profile: profileRes,
+    points,
+    completedStages,
+    totalStages: 7,
+    expiringDocs,
+  }), user));
 });
 
 app.get('/dashboard/save', async c => {

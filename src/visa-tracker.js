@@ -615,3 +615,120 @@ export function studentFundPage(user) {
 
   return dashWrap(user, 'student-fund', body);
 }
+
+// ── DASHBOARD OVERVIEW (replaces old dashboardPage) ──────────────────────────
+export function dashboardOverview(user, { inquiries, profile, points, completedStages, totalStages, expiringDocs }) {
+  const today = new Date();
+
+  const quickStats = [
+    {
+      label: 'Migration Points',
+      value: points ? `${points.total} pts` : '—',
+      sub: points ? (points.total >= 90 ? 'Competitive' : points.total >= 65 ? 'Getting there' : 'Below threshold') : 'Not calculated',
+      color: points ? (points.total >= 90 ? '#16a34a' : points.total >= 65 ? '#d97706' : '#dc2626') : '#94a3b8',
+      href: '/dashboard/points',
+      icon: '🔢',
+    },
+    {
+      label: 'Visa Timeline',
+      value: `${completedStages} / ${totalStages}`,
+      sub: completedStages === totalStages ? '🎉 Visa granted!' : completedStages === 0 ? 'Not started' : 'In progress',
+      color: '#1a5bb8',
+      href: '/dashboard/timeline',
+      icon: '📅',
+    },
+    {
+      label: 'Expiring Documents',
+      value: expiringDocs.length > 0 ? expiringDocs.length : '✓',
+      sub: expiringDocs.length > 0 ? 'Need attention' : 'All clear',
+      color: expiringDocs.length > 0 ? '#dc2626' : '#16a34a',
+      href: '/dashboard/documents',
+      icon: '📄',
+    },
+    {
+      label: 'Inquiries',
+      value: inquiries.length,
+      sub: 'Total submitted',
+      color: '#1a5bb8',
+      href: '/contact',
+      icon: '📝',
+    },
+  ];
+
+  const tools = [
+    { href: '/dashboard/points',           icon: '🔢', label: 'Points Calculator',      desc: 'Calculate your skilled migration points score' },
+    { href: '/dashboard/timeline',          icon: '📅', label: 'Visa Timeline',          desc: 'Track your case from skills assessment to grant' },
+    { href: '/dashboard/documents',         icon: '📄', label: 'Document Expiry',        desc: 'Passport, visa, English test, skills assessment' },
+    { href: '/dashboard/fees',              icon: '💰', label: 'VAC Fee Calculator',     desc: 'Estimate your Visa Application Charge' },
+    { href: '/dashboard/occupations',       icon: '🔍', label: 'Occupation Search',      desc: 'MLTSSL/STSOL list with visa eligibility' },
+    { href: '/dashboard/state-criteria',    icon: '🗺️', label: 'State Criteria',         desc: 'SC 190 & 491 min points by state' },
+    { href: '/dashboard/processing-times',  icon: '⏱️', label: 'Processing Times',       desc: 'P25/P50/P75/P90 percentile estimates' },
+    { href: '/dashboard/english',           icon: '🗣️', label: 'English Requirements',   desc: 'IELTS/PTE/TOEFL/OET by visa subclass' },
+    { href: '/dashboard/student-fund',      icon: '🎓', label: 'Student Fund Calc',      desc: 'Minimum savings for student visa' },
+    { href: '/courses',                     icon: '🔎', label: 'CRICOS Course Search',   desc: 'Search 26K+ registered courses' },
+    { href: '/contact',                     icon: '📞', label: 'Book Consultation',      desc: 'Talk to a Careers Gateway expert' },
+    { href: '/health-insurance',            icon: '🏥', label: 'Health Insurance',       desc: 'Compare OSHC & OVHC policies' },
+  ];
+
+  const body = `
+    <div style="margin-bottom:24px">
+      <div style="font-size:1.6rem;font-weight:800;color:#1a2744">Welcome back, ${esc(user.full_name.split(' ')[0])}! 👋</div>
+      <div style="color:#64748b;margin-top:4px">Your migration dashboard — everything in one place</div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:28px">
+      ${quickStats.map(s => `
+        <a href="${s.href}" style="text-decoration:none">
+          <div style="background:#fff;border-radius:12px;padding:18px;box-shadow:0 2px 8px rgba(0,0,0,.05);border-top:3px solid ${s.color};transition:.15s" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform=''">
+            <div style="font-size:1.5rem">${s.icon}</div>
+            <div style="font-size:1.4rem;font-weight:800;color:${s.color};margin:6px 0 2px">${s.value}</div>
+            <div style="font-size:.8rem;font-weight:700;color:#1a2744">${s.label}</div>
+            <div style="font-size:.75rem;color:#94a3b8;margin-top:2px">${s.sub}</div>
+          </div>
+        </a>`).join('')}
+    </div>
+
+    ${expiringDocs.length > 0 ? `
+    <div style="background:#fff7ed;border:1px solid #fed7aa;border-radius:10px;padding:16px;margin-bottom:24px;display:flex;align-items:flex-start;gap:12px">
+      <div style="font-size:1.4rem">⚠️</div>
+      <div>
+        <div style="font-weight:700;color:#c2410c;margin-bottom:4px">Documents expiring soon</div>
+        ${expiringDocs.map(d => {
+          const days = Math.round((new Date(d.expiry_date) - today) / 86400000);
+          return `<div style="font-size:.88rem;color:#7c2d12">${esc(d.doc_label)} — ${days < 0 ? 'EXPIRED' : `expires in ${days} days`}</div>`;
+        }).join('')}
+        <a href="/dashboard/documents" style="font-size:.85rem;font-weight:600;color:#c2410c;margin-top:6px;display:inline-block">Manage documents →</a>
+      </div>
+    </div>` : ''}
+
+    <div style="background:#fff;border-radius:12px;padding:24px;box-shadow:0 2px 8px rgba(0,0,0,.05);margin-bottom:24px">
+      <div style="font-weight:700;color:#1a2744;font-size:1rem;margin-bottom:16px">🧰 Migration Tools</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px">
+        ${tools.map(t => `
+          <a href="${t.href}" style="text-decoration:none;display:flex;align-items:flex-start;gap:10px;padding:12px;border-radius:8px;border:1px solid #e8f0fe;transition:.15s" onmouseover="this.style.background='#f0f6ff'" onmouseout="this.style.background=''">
+            <span style="font-size:1.1rem;flex-shrink:0">${t.icon}</span>
+            <div>
+              <div style="font-weight:600;font-size:.88rem;color:#1a2744">${t.label}</div>
+              <div style="font-size:.78rem;color:#94a3b8;margin-top:1px">${t.desc}</div>
+            </div>
+          </a>`).join('')}
+      </div>
+    </div>
+
+    ${inquiries.length > 0 ? `
+    <div style="background:#fff;border-radius:12px;padding:24px;box-shadow:0 2px 8px rgba(0,0,0,.05)">
+      <div style="font-weight:700;color:#1a2744;font-size:1rem;margin-bottom:16px">📋 Recent Inquiries</div>
+      ${inquiries.slice(0,5).map(i => `
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #f1f5f9;flex-wrap:wrap;gap:8px">
+          <div>
+            <div style="font-weight:600;font-size:.9rem;color:#1a2744">${esc(i.service||'General Inquiry')}${i.cricos_course_name ? ` — ${esc(i.cricos_course_name)}` : ''}</div>
+            <div style="font-size:.8rem;color:#94a3b8">${new Date(i.created_at).toLocaleDateString('en-AU',{day:'numeric',month:'short',year:'numeric'})}</div>
+          </div>
+          <span style="background:${i.kondesk_sent?'#dcfce7':'#f1f5f9'};color:${i.kondesk_sent?'#166534':'#374151'};padding:3px 10px;border-radius:12px;font-size:.8rem;font-weight:600">${i.kondesk_sent?'✓ Processing':'Received'}</span>
+        </div>`).join('')}
+    </div>` : ''}`;
+
+  return dashWrap(user, 'overview', body);
+}
+
+export { dashWrap };
