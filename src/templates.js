@@ -129,8 +129,20 @@ const CSS = `
   .footer-bottom{border-top:1px solid #2d3d5a;padding-top:20px;text-align:center;font-size:.85rem;color:#64748b}
 
   /* KONPARE WIDGET */
-  .widget-wrap{background:#fff;border-radius:12px;padding:12px;box-shadow:0 2px 12px rgba(0,0,0,.08);overflow:hidden}
-  .widget-wrap iframe{width:100%;border:none;min-height:560px;display:block}
+  .widget-wrap{background:#fff;border-radius:12px;box-shadow:0 2px 16px rgba(0,0,0,.1);overflow:hidden;position:relative}
+  .widget-wrap iframe{width:100%;border:none;height:820px;display:block}
+  .widget-fs-btn{position:absolute;top:10px;right:10px;z-index:10;background:rgba(0,0,0,.55);color:#fff;border:none;border-radius:6px;padding:6px 12px;font-size:.8rem;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;backdrop-filter:blur(4px);transition:.2s}
+  .widget-fs-btn:hover{background:rgba(0,0,0,.75)}
+  /* Fullscreen overlay mode */
+  .widget-overlay{display:none;position:fixed;inset:0;z-index:9999;background:#000;flex-direction:column}
+  .widget-overlay.active{display:flex}
+  .widget-overlay iframe{flex:1;width:100%;border:none}
+  .widget-overlay-bar{background:#1a2744;padding:10px 16px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+  .widget-overlay-bar span{color:#fff;font-weight:600;font-size:.9rem}
+  .widget-overlay-close{background:#dc2626;color:#fff;border:none;border-radius:6px;padding:6px 14px;font-size:.85rem;font-weight:700;cursor:pointer}
+  /* Native fullscreen styles */
+  #konpare-frame:fullscreen{width:100vw;height:100vh}
+  #konpare-frame:-webkit-full-screen{width:100vw;height:100vh}
 
   @media(max-width:768px){
     .hero h1{font-size:1.9rem}
@@ -874,21 +886,77 @@ function healthInsurancePage(user, konpareKey) {
         `).join('')}
       </div>
 
-      <h2 style="font-size:1.5rem;font-weight:700;margin-bottom:20px;color:#1a2744">Compare & Buy Now</h2>
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:16px">
+        <h2 style="font-size:1.5rem;font-weight:700;color:#1a2744;margin:0">Compare & Buy Now</h2>
+        <div style="display:flex;gap:10px;align-items:center">
+          <span style="font-size:.85rem;color:#64748b">Having trouble? Try</span>
+          <a href="https://cga.konpare.online/" target="_blank" rel="noopener"
+             style="font-size:.85rem;font-weight:600;color:#059669;border:1px solid #059669;padding:5px 12px;border-radius:6px;text-decoration:none">
+            Open in new tab ↗
+          </a>
+        </div>
+      </div>
+
       <div class="widget-wrap">
+        <button class="widget-fs-btn" onclick="openWidgetFullscreen()" title="Fullscreen">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M8 3H5a2 2 0 00-2 2v3m18 0V5a2 2 0 00-2-2h-3m0 18h3a2 2 0 002-2v-3M3 16v3a2 2 0 002 2h3"/></svg>
+          Fullscreen
+        </button>
         <iframe
+          id="konpare-frame"
           src="https://cga.konpare.online/"
           title="OSHC OVHC Health Insurance Comparison"
-          allow="payment"
+          allow="payment; fullscreen"
+          allowfullscreen
           loading="lazy">
         </iframe>
       </div>
 
-      <div style="margin-top:24px;padding:20px;background:#f0fdf4;border-radius:10px;text-align:center">
-        <p style="color:#166534;font-size:.9rem">🔒 Secure payments powered by Konpare. Policies from all major Australian health insurers.</p>
+      <div style="margin-top:16px;padding:16px 20px;background:#f0fdf4;border-radius:10px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+        <p style="color:#166534;font-size:.88rem;margin:0">🔒 Secure payments powered by Konpare. Policies from all major Australian health insurers.</p>
+        <button onclick="openWidgetFullscreen()" style="background:#059669;color:#fff;border:none;border-radius:6px;padding:8px 16px;font-size:.85rem;font-weight:700;cursor:pointer;white-space:nowrap">
+          ⛶ Full Screen
+        </button>
       </div>
     </div>
   </section>
+
+  <!-- Fullscreen overlay -->
+  <div class="widget-overlay" id="widget-overlay">
+    <div class="widget-overlay-bar">
+      <span>🏥 Konpare — OSHC &amp; OVHC Health Insurance</span>
+      <button class="widget-overlay-close" onclick="closeWidgetFullscreen()">✕ Close Fullscreen</button>
+    </div>
+    <iframe src="https://cga.konpare.online/" title="OSHC OVHC" allow="payment" allowfullscreen></iframe>
+  </div>
+
+  <script>
+  function openWidgetFullscreen() {
+    const frame = document.getElementById('konpare-frame');
+    // Try native fullscreen first
+    const req = frame.requestFullscreen || frame.webkitRequestFullscreen || frame.mozRequestFullScreen;
+    if (req) {
+      req.call(frame).catch(() => showOverlay());
+    } else {
+      showOverlay();
+    }
+  }
+  function showOverlay() {
+    const overlay = document.getElementById('widget-overlay');
+    overlay.classList.add('active');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeWidgetFullscreen() {
+    document.getElementById('widget-overlay').classList.remove('active');
+    document.body.style.overflow = '';
+  }
+  // Close overlay on Escape
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeWidgetFullscreen(); });
+  // Exit native fullscreen handler
+  document.addEventListener('fullscreenchange', () => {
+    if (!document.fullscreenElement) document.body.style.overflow = '';
+  });
+  </script>
   `, user, '', { url: '/health-insurance', description: 'Compare and buy OSHC and OVHC health insurance for international students and visitors in Australia. Powered by Konpare — instant online purchase.', image: 'https://careersgateway.com.au/wp-content/uploads/elementor/thumbs/pexels-photo-7163956-7163956-scaled-r7fvhsbi458lc1m0wz89g7f03sdjg52qxlmabibvpc.jpg' });
 }
 
