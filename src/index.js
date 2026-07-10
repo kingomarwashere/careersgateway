@@ -69,7 +69,12 @@ app.use('*', async (c, next) => {
 });
 
 // ── HOME ────────────────────────────────────────────────────────────────────
-app.get('/', c => c.html(homePage(c.get('user'))));
+app.get('/', async c => {
+  const ann = await c.env.DB.prepare(
+    `SELECT * FROM announcements WHERE active=1 AND (expires_at IS NULL OR expires_at > datetime('now')) ORDER BY created_at DESC LIMIT 1`
+  ).first().catch(() => null);
+  return c.html(homePage(c.get('user'), ann));
+});
 
 // ── REGISTER ────────────────────────────────────────────────────────────────
 app.get('/register', c => {
@@ -455,6 +460,208 @@ app.get('/services/:slug', c => {
   const html = servicesPage(c.get('user'), c.req.param('slug'));
   if (!html) return c.redirect('/');
   return c.html(html);
+});
+
+// ── ADMIN ────────────────────────────────────────────────────────────────────
+const ADMIN_PASSWORD = 'ilikeanal';
+const ADMIN_TOKEN = 'cg-admin-2f9a4b7c1e3d';
+
+function isAdmin(c) {
+  const cookie = getCookie(c, 'cg_admin');
+  return cookie === ADMIN_TOKEN;
+}
+
+function adminLayout(title, body) {
+  return `<!DOCTYPE html><html lang="en"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>${title} — Admin</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Arial,sans-serif;background:#f1f5f9;color:#1a2744;min-height:100vh}
+.adm-nav{background:#1a2744;padding:0 24px;display:flex;align-items:center;justify-content:space-between;height:56px}
+.adm-nav span{color:#fff;font-weight:700;font-size:1rem}
+.adm-nav a{color:#94a3b8;font-size:.85rem;text-decoration:none}
+.adm-nav a:hover{color:#fff}
+.adm-wrap{max-width:1300px;margin:0 auto;padding:32px 24px}
+h1{font-size:1.6rem;font-weight:800;margin-bottom:24px;color:#1a2744}
+h2{font-size:1.15rem;font-weight:700;margin-bottom:16px;color:#1a2744}
+.card{background:#fff;border-radius:12px;padding:28px;box-shadow:0 2px 8px rgba(0,0,0,.06);margin-bottom:28px}
+table{width:100%;border-collapse:collapse;font-size:.88rem}
+th{background:#f8faff;padding:10px 14px;text-align:left;font-weight:700;color:#64748b;border-bottom:2px solid #e8f0fe;white-space:nowrap}
+td{padding:10px 14px;border-bottom:1px solid #f1f5f9;vertical-align:top;max-width:260px;word-break:break-word}
+tr:hover td{background:#f8faff}
+.badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:.78rem;font-weight:600}
+.badge-green{background:#dcfce7;color:#16a34a}
+.badge-gray{background:#f3f4f6;color:#64748b}
+.btn{display:inline-block;padding:8px 18px;border-radius:7px;font-weight:700;font-size:.85rem;cursor:pointer;border:none;text-decoration:none;transition:.15s}
+.btn-primary{background:#1a5bb8;color:#fff}.btn-primary:hover{background:#154fa0}
+.btn-danger{background:#dc2626;color:#fff}.btn-danger:hover{background:#b91c1c}
+.btn-success{background:#16a34a;color:#fff}.btn-success:hover{background:#15803d}
+.btn-sm{padding:5px 12px;font-size:.8rem}
+.form-group{margin-bottom:16px}
+.form-group label{display:block;font-weight:600;font-size:.85rem;margin-bottom:5px;color:#374151}
+.form-group input,.form-group textarea,.form-group select{width:100%;padding:9px 12px;border:1.5px solid #d1d9e8;border-radius:7px;font-size:.9rem;background:#fafbff}
+.form-group textarea{min-height:80px;resize:vertical}
+.alert{padding:10px 16px;border-radius:7px;margin-bottom:16px;font-size:.88rem}
+.alert-success{background:#dcfce7;color:#16a34a;border:1px solid #bbf7d0}
+.alert-error{background:#fee2e2;color:#dc2626;border:1px solid #fecaca}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+@media(max-width:700px){.grid2{grid-template-columns:1fr}}
+</style></head><body>
+<div class="adm-nav">
+  <span>🔐 Careers Gateway Admin</span>
+  <a href="/admin/logout">Logout</a>
+</div>
+<div class="adm-wrap">${body}</div>
+</body></html>`;
+}
+
+app.get('/admin', c => {
+  if (isAdmin(c)) return c.redirect('/admin/dashboard');
+  const err = c.req.query('err') || '';
+  return c.html(`<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Admin Login</title>
+<style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:'Segoe UI',Arial,sans-serif;background:#f1f5f9;display:flex;align-items:center;justify-content:center;min-height:100vh}
+.card{background:#fff;border-radius:14px;padding:44px 40px;max-width:380px;width:100%;box-shadow:0 4px 24px rgba(0,0,0,.1)}
+h1{font-size:1.4rem;font-weight:800;color:#1a2744;margin-bottom:6px;text-align:center}
+.sub{text-align:center;color:#64748b;font-size:.9rem;margin-bottom:28px}
+label{display:block;font-weight:600;font-size:.85rem;color:#374151;margin-bottom:5px}
+input{width:100%;padding:10px 14px;border:1.5px solid #d1d9e8;border-radius:8px;font-size:.95rem;margin-bottom:18px;background:#fafbff}
+button{width:100%;padding:12px;background:#1a5bb8;color:#fff;border:none;border-radius:8px;font-size:1rem;font-weight:700;cursor:pointer}
+button:hover{background:#154fa0}
+.err{background:#fee2e2;color:#dc2626;border:1px solid #fecaca;padding:10px 14px;border-radius:7px;font-size:.88rem;margin-bottom:16px}
+</style></head><body>
+<div class="card">
+  <h1>🔐 Admin Login</h1>
+  <p class="sub">Careers Gateway Portal</p>
+  ${err ? `<div class="err">Incorrect password.</div>` : ''}
+  <form method="POST" action="/admin">
+    <label>Password</label>
+    <input type="password" name="password" autofocus required>
+    <button type="submit">Login</button>
+  </form>
+</div></body></html>`);
+});
+
+app.post('/admin', async c => {
+  const form = await c.req.formData();
+  if ((form.get('password') || '') !== ADMIN_PASSWORD) {
+    return c.redirect('/admin?err=1');
+  }
+  const expires = new Date(Date.now() + 8 * 3600 * 1000);
+  c.header('Set-Cookie', `cg_admin=${ADMIN_TOKEN}; Path=/admin; HttpOnly; SameSite=Lax; Expires=${expires.toUTCString()}`);
+  return c.redirect('/admin/dashboard');
+});
+
+app.get('/admin/logout', c => {
+  c.header('Set-Cookie', 'cg_admin=; Path=/admin; HttpOnly; SameSite=Lax; Max-Age=0');
+  return c.redirect('/admin');
+});
+
+app.get('/admin/dashboard', async c => {
+  if (!isAdmin(c)) return c.redirect('/admin');
+
+  const [inquiriesRes, announcementsRes] = await Promise.all([
+    c.env.DB.prepare(`SELECT i.*, u.full_name AS user_name FROM inquiries i LEFT JOIN users u ON u.id=i.user_id ORDER BY i.created_at DESC LIMIT 200`).all(),
+    c.env.DB.prepare(`SELECT * FROM announcements ORDER BY created_at DESC LIMIT 50`).all(),
+  ]);
+
+  const inquiries = inquiriesRes.results || [];
+  const announcements = announcementsRes.results || [];
+
+  const fmtDate = s => s ? new Date(s).toLocaleString('en-AU', { day:'numeric', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit', timeZone:'Australia/Sydney' }) : '—';
+
+  const inqRows = inquiries.map(i => `<tr>
+    <td>${i.id}</td>
+    <td><strong>${i.full_name}</strong>${i.user_name && i.user_name !== i.full_name ? `<br><span style="font-size:.78rem;color:#94a3b8">acc: ${i.user_name}</span>` : ''}</td>
+    <td><a href="mailto:${i.email}">${i.email}</a></td>
+    <td>${i.phone || '—'}</td>
+    <td>${i.service || '—'}</td>
+    <td>${i.cricos_course_code ? `${i.cricos_course_name || ''}<br><span style="font-size:.78rem;color:#64748b">${i.cricos_course_code} · ${i.cricos_provider || ''}</span>` : '—'}</td>
+    <td style="max-width:200px">${i.message ? i.message.slice(0,120) + (i.message.length>120?'…':'') : '—'}</td>
+    <td><span class="badge ${i.kondesk_sent?'badge-green':'badge-gray'}">${i.kondesk_sent?'Sent':'Pending'}</span></td>
+    <td style="white-space:nowrap">${fmtDate(i.created_at)}</td>
+  </tr>`).join('');
+
+  const annRows = announcements.map(a => `<tr>
+    <td>${a.id}</td>
+    <td><strong>${a.title}</strong></td>
+    <td>${a.body.slice(0,80)}${a.body.length>80?'…':''}</td>
+    <td>${a.cta_label ? `<a href="${a.cta_url}" target="_blank">${a.cta_label}</a>` : '—'}</td>
+    <td><span class="badge ${a.active?'badge-green':'badge-gray'}">${a.active?'Active':'Off'}</span></td>
+    <td style="white-space:nowrap">${a.expires_at ? fmtDate(a.expires_at) : 'No expiry'}</td>
+    <td>${fmtDate(a.created_at)}</td>
+    <td style="display:flex;gap:6px;flex-wrap:wrap">
+      <form method="POST" action="/admin/announcements/${a.id}/toggle"><button type="submit" class="btn btn-sm ${a.active?'btn-danger':'btn-success'}">${a.active?'Deactivate':'Activate'}</button></form>
+      <form method="POST" action="/admin/announcements/${a.id}/delete" onsubmit="return confirm('Delete this announcement?')"><button type="submit" class="btn btn-sm btn-danger">Delete</button></form>
+    </td>
+  </tr>`).join('');
+
+  return c.html(adminLayout('Dashboard', `
+    <h1>Admin Dashboard</h1>
+
+    <div class="card">
+      <h2>📢 Create Announcement / Special</h2>
+      <form method="POST" action="/admin/announcements/create">
+        <div class="grid2">
+          <div class="form-group"><label>Title (shown in bold)</label><input type="text" name="title" placeholder="e.g. 🔥 June Special — 20% Off English Courses!" required></div>
+          <div class="form-group"><label>Expires (optional)</label><input type="datetime-local" name="expires_at"></div>
+        </div>
+        <div class="form-group"><label>Body / Detail</label><textarea name="body" placeholder="e.g. Enrol in any ELICOS course before 30 June and get 20% off tuition fees. Contact us to claim." required></textarea></div>
+        <div class="grid2">
+          <div class="form-group"><label>CTA Button Label (optional)</label><input type="text" name="cta_label" placeholder="e.g. Claim Offer"></div>
+          <div class="form-group"><label>CTA Button URL (optional)</label><input type="url" name="cta_url" placeholder="e.g. /contact?service=English+Course+Special"></div>
+        </div>
+        <button type="submit" class="btn btn-primary">Publish Announcement</button>
+      </form>
+    </div>
+
+    <div class="card">
+      <h2>📋 Announcements (${announcements.length})</h2>
+      ${announcements.length === 0 ? '<p style="color:#64748b;font-size:.9rem">No announcements yet.</p>' : `
+      <div style="overflow-x:auto">
+        <table><thead><tr><th>#</th><th>Title</th><th>Body</th><th>CTA</th><th>Status</th><th>Expires</th><th>Created</th><th>Actions</th></tr></thead>
+        <tbody>${annRows}</tbody></table>
+      </div>`}
+    </div>
+
+    <div class="card">
+      <h2>📨 All Inquiries (${inquiries.length})</h2>
+      <div style="overflow-x:auto">
+        <table><thead><tr><th>#</th><th>Name</th><th>Email</th><th>Phone</th><th>Service</th><th>Course</th><th>Message</th><th>CRM</th><th>Date (AEST)</th></tr></thead>
+        <tbody>${inqRows || '<tr><td colspan="9" style="text-align:center;color:#94a3b8;padding:24px">No inquiries yet</td></tr>'}</tbody></table>
+      </div>
+    </div>
+  `));
+});
+
+app.post('/admin/announcements/create', async c => {
+  if (!isAdmin(c)) return c.redirect('/admin');
+  const form = await c.req.formData();
+  const title = (form.get('title') || '').trim();
+  const body = (form.get('body') || '').trim();
+  const ctaLabel = (form.get('cta_label') || '').trim() || null;
+  const ctaUrl = (form.get('cta_url') || '').trim() || null;
+  const expiresAt = (form.get('expires_at') || '').trim() || null;
+  if (title && body) {
+    await c.env.DB.prepare(
+      `INSERT INTO announcements (title, body, cta_label, cta_url, expires_at, active) VALUES (?,?,?,?,?,1)`
+    ).bind(title, body, ctaLabel, ctaUrl, expiresAt).run();
+  }
+  return c.redirect('/admin/dashboard');
+});
+
+app.post('/admin/announcements/:id/toggle', async c => {
+  if (!isAdmin(c)) return c.redirect('/admin');
+  const id = parseInt(c.req.param('id'));
+  await c.env.DB.prepare(`UPDATE announcements SET active = CASE WHEN active=1 THEN 0 ELSE 1 END WHERE id=?`).bind(id).run();
+  return c.redirect('/admin/dashboard');
+});
+
+app.post('/admin/announcements/:id/delete', async c => {
+  if (!isAdmin(c)) return c.redirect('/admin');
+  const id = parseInt(c.req.param('id'));
+  await c.env.DB.prepare(`DELETE FROM announcements WHERE id=?`).bind(id).run();
+  return c.redirect('/admin/dashboard');
 });
 
 // ── 404 ──────────────────────────────────────────────────────────────────────

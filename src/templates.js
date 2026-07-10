@@ -158,7 +158,34 @@ const BASE_URL = 'https://careersgateway.com.au';
 const DEFAULT_IMAGE = 'https://careersgateway.com.au/wp-content/uploads/2025/06/pexels-photo-1236421-1236421-scaled.jpg';
 const SITE_NAME = 'Careers Gateway Australia';
 
-function layout(title, body, user = null, extraHead = '', meta = {}) {
+function announcementBanner(ann) {
+  if (!ann) return '';
+  return `
+<div id="cg-ann" style="background:linear-gradient(90deg,#ff6b00,#e63900);color:#fff;padding:0;overflow:hidden;position:relative;z-index:99">
+  <div style="max-width:1200px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+    <span style="font-size:1.3rem">🎉</span>
+    <div style="flex:1;min-width:200px">
+      <strong style="font-size:1rem">${esc(ann.title)}</strong>
+      <span style="margin-left:10px;font-size:.9rem;opacity:.92">${esc(ann.body)}</span>
+    </div>
+    ${ann.cta_label && ann.cta_url ? `<a href="${esc(ann.cta_url)}" style="background:#fff;color:#e63900;font-weight:700;padding:8px 20px;border-radius:6px;font-size:.9rem;white-space:nowrap;text-decoration:none" onmouseover="this.style.background='#fff3ee'" onmouseout="this.style.background='#fff'">${esc(ann.cta_label)}</a>` : ''}
+    <button onclick="dismissAnn(${ann.id})" aria-label="Dismiss" style="background:rgba(255,255,255,.25);border:none;color:#fff;width:28px;height:28px;border-radius:50%;font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;line-height:1">×</button>
+  </div>
+</div>
+<script>
+(function(){
+  var k='cg-ann-dismissed-${ann.id}';
+  if(localStorage.getItem(k)){document.getElementById('cg-ann').style.display='none';}
+})();
+function dismissAnn(id){
+  localStorage.setItem('cg-ann-dismissed-'+id,'1');
+  var el=document.getElementById('cg-ann');
+  if(el){el.style.transition='max-height .3s,opacity .3s';el.style.maxHeight='0';el.style.opacity='0';setTimeout(function(){el.style.display='none';},350);}
+}
+</script>`;
+}
+
+function layout(title, body, user = null, extraHead = '', meta = {}, announcement = null) {
   const fullTitle = `${title} — ${SITE_NAME}`;
   const description = meta.description || 'Your trusted partner for education, migration, recruitment, and career services in Australia. Search CRICOS courses, get expert visa advice, and more.';
   const image = meta.image || DEFAULT_IMAGE;
@@ -222,6 +249,7 @@ ${extraHead}
     </div>
   </div>
 </nav>
+${announcementBanner(announcement)}
 ${body}
 <!-- WhatsApp floating button -->
 <a href="https://wa.me/61405580047?text=Hi%20Careers%20Gateway%2C%20I%27d%20like%20to%20enquire%20about%20your%20services."
@@ -292,7 +320,7 @@ function esc(str) {
   return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
-function homePage(user) {
+function homePage(user, announcement = null) {
   return layout('Your Gateway to Success', `
   <div class="hero" style="padding:0;overflow:hidden">
     <div class="container" style="display:grid;grid-template-columns:1fr 420px;align-items:center;min-height:480px;padding:0 24px;gap:0">
@@ -498,7 +526,7 @@ function homePage(user) {
       </div>
     </div>
   </section>
-  `, user, '', { url: '/', description: 'Careers Gateway Australia — your trusted partner for education, migration, recruitment, RPL, and visa services. Search 26,000+ CRICOS courses and book a free consultation.', image: 'https://careersgateway.com.au/wp-content/uploads/2025/06/pexels-photo-1236421-1236421-scaled.jpg' });
+  `, user, '', { url: '/', description: 'Careers Gateway Australia — your trusted partner for education, migration, recruitment, RPL, and visa services. Search 26,000+ CRICOS courses and book a free consultation.', image: 'https://careersgateway.com.au/wp-content/uploads/2025/06/pexels-photo-1236421-1236421-scaled.jpg' }, announcement);
 }
 
 function coursesPage(user, results, params, fromCache, error, savedCode = '') {
