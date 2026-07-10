@@ -489,10 +489,13 @@ function homePage(user) {
   `, user, '', { url: '/', description: 'Careers Gateway Australia — your trusted partner for education, migration, recruitment, RPL, and visa services. Search 26,000+ CRICOS courses and book a free consultation.', image: 'https://careersgateway.com.au/wp-content/uploads/2025/06/pexels-photo-1236421-1236421-scaled.jpg' });
 }
 
-function coursesPage(user, results, params, fromCache, error) {
+function coursesPage(user, results, params, fromCache, error, savedCode = '') {
   const hasSearch = Object.values(params).some(v => v);
   const stateOptions = ['NSW','VIC','QLD','WA','SA','TAS','ACT','NT'];
   const levelOptions = [['1','Bachelor Degree'],['2','Master Degree'],['3','Doctoral Degree'],['4','Diploma'],['5','Certificate'],['6','Advanced Diploma'],['7','Graduate Certificate'],['8','Graduate Diploma']];
+
+  // Build the back URL (current search) so save redirects back here
+  const backUrl = '/courses?' + Object.entries(params).filter(([,v])=>v).map(([k,v])=>`${k}=${encodeURIComponent(v)}`).join('&');
 
   const courseMeta = { url: '/courses', description: 'Search 26,000+ CRICOS-registered courses from Australian universities and colleges. Filter by state, level, and field of study. Free account required to view results.', image: 'https://careersgateway.com.au/wp-content/uploads/2025/06/pexels-photo-1236421-1236421-scaled.jpg' };
   return layout('CRICOS Course Search', `
@@ -504,6 +507,14 @@ function coursesPage(user, results, params, fromCache, error) {
   </section>
   <section>
     <div class="container">
+      ${savedCode ? `
+      <div style="background:#dcfce7;border:1px solid #bbf7d0;border-radius:10px;padding:14px 18px;margin-bottom:20px;display:flex;align-items:center;gap:12px">
+        <span style="font-size:1.3rem">✅</span>
+        <div>
+          <strong style="color:#166534">Course saved to your dashboard!</strong>
+          <span style="color:#166534;font-size:.9rem;margin-left:8px">View all saved courses in your <a href="/dashboard" style="color:#15803d;font-weight:700">dashboard</a>.</span>
+        </div>
+      </div>` : ''}
       <form action="/courses" method="GET" class="search-bar">
         <div class="search-grid">
           <div class="form-group" style="margin:0">
@@ -606,7 +617,10 @@ function coursesPage(user, results, params, fromCache, error) {
               </div>
               <div class="course-actions">
                 <a href="/contact?course=${encodeURIComponent(c.courseName||'')}&code=${encodeURIComponent(c.cricosCode||'')}&provider=${encodeURIComponent(c.provider||'')}" class="btn btn-primary btn-sm">Book Consultation</a>
-                <a href="/dashboard/save?code=${encodeURIComponent(c.cricosCode||'')}&name=${encodeURIComponent(c.courseName||'')}&provider=${encodeURIComponent(c.provider||'')}" class="btn btn-sm" style="background:#f0f6ff;color:#1a5bb8;text-align:center">💾 Save Course</a>
+                ${c.cricosCode === savedCode
+                  ? `<span class="btn btn-sm" style="background:#dcfce7;color:#166534;text-align:center;cursor:default">✅ Saved</span>`
+                  : `<a href="/dashboard/save?code=${encodeURIComponent(c.cricosCode||'')}&name=${encodeURIComponent(c.courseName||'')}&provider=${encodeURIComponent(c.provider||'')}&back=${encodeURIComponent(backUrl)}" class="btn btn-sm" style="background:#f0f6ff;color:#1a5bb8;text-align:center">💾 Save</a>`
+                }
               </div>
             </div>
           `).join('')}

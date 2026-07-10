@@ -61,6 +61,13 @@ app.post('/register', async c => {
     'INSERT INTO users (email, password_hash, full_name, phone) VALUES (?, ?, ?, ?)'
   ).bind(email, hash, fullName, phone).run();
 
+  // Notify team of new registration — high-intent signal
+  c.executionCtx.waitUntil(pushLeadToKondesk(c.env, {
+    fullName, email, phone,
+    service: '🆕 New Account Registration',
+    message: `New user registered on the portal. Name: ${fullName}, Phone: ${phone}`,
+  }));
+
   const { token, expires } = await createSession(c.env, result.meta.last_row_id);
   c.header('Set-Cookie', `session=${token}; Path=/; HttpOnly; SameSite=Lax; Expires=${expires.toUTCString()}`);
   return c.redirect('/dashboard');
@@ -116,7 +123,7 @@ app.get('/courses', async c => {
     error = r.error || null;
   }
 
-  return c.html(coursesPage(c.get('user'), results, params, fromCache, error));
+  return c.html(coursesPage(c.get('user'), results, params, fromCache, error, c.req.query('saved')||''));
 });
 
 // ── DASHBOARD ───────────────────────────────────────────────────────────────
@@ -124,7 +131,7 @@ app.get('/dashboard', async c => {
   const user = c.get('user');
   if (!user) return c.redirect('/login?redirect=/dashboard');
   const [inquiriesRes, profileRes, docsRes, timelineRes] = await Promise.all([
-    c.env.DB.prepare('SELECT * FROM inquiries WHERE user_id=? ORDER BY created_at DESC LIMIT 10').bind(user.id).all(),
+    c.env.DB.prepare('SELECT * FROM inquiries WHERE user_id=? ORDER BY created_at DESC LIMIT 30').bind(user.id).all(),
     c.env.DB.prepare('SELECT * FROM visa_profiles WHERE user_id=?').bind(user.id).first(),
     c.env.DB.prepare('SELECT * FROM document_expiries WHERE user_id=? ORDER BY expiry_date ASC LIMIT 5').bind(user.id).all(),
     c.env.DB.prepare('SELECT * FROM case_timelines WHERE user_id=?').bind(user.id).all(),
@@ -150,11 +157,37 @@ app.get('/dashboard', async c => {
 app.get('/dashboard/save', async c => {
   const user = c.get('user');
   if (!user) return c.redirect('/login?redirect=/courses');
-  const { code, name, provider } = { code: c.req.query('code'), name: c.req.query('name'), provider: c.req.query('provider') };
-  await c.env.DB.prepare(
-    'INSERT INTO inquiries (user_id, full_name, email, service, cricos_course_code, cricos_course_name, cricos_provider) VALUES (?, ?, ?, ?, ?, ?, ?)'
-  ).bind(user.id, user.full_name, user.email, 'Saved Course', code||'', name||'', provider||'').run();
-  return c.redirect('/dashboard');
+  const code     = c.req.query('code')     || '';
+  const name     = c.req.query('name')     || '';
+  const provider = c.req.query('provider') || '';
+  const back     = c.req.query('back')     || '';   // search URL to return to
+
+  // Check if already saved
+  const existing = await c.env.DB.prepare(
+    'SELECT id FROM inquiries WHERE user_id=? AND cricos_course_code=? AND service=?'
+  ).bind(user.id, code, 'Saved Course').first();
+
+  if (!existing) {
+    await c.env.DB.prepare(
+      'INSERT INTO inquiries (user_id, full_name, email, service, cricos_course_code, cricos_course_name, cricos_provider) VALUES (?, ?, ?, ?, ?, ?, ?)'
+    ).bind(user.id, user.full_name, user.email, 'Saved Course', code, name, provider).run();
+
+    // Notify team — course save is high-intent
+    c.executionCtx.waitUntil(pushLeadToKondesk(c.env, {
+      fullName: user.full_name,
+      email: user.email,
+      phone: user.phone || '',
+      service: '💾 Course Saved',
+      cricosCode: code,
+      courseName: name,
+      provider,
+      message: `${user.full_name} saved a course to their dashboard: ${name} (${code}) at ${provider}`,
+    }));
+  }
+
+  // Return to courses page with saved=1 flag so we can show a confirmation
+  const returnUrl = back ? `${back}&saved=${encodeURIComponent(code)}` : `/courses?saved=${encodeURIComponent(code)}`;
+  return c.redirect(returnUrl);
 });
 
 // ── VISA TRACKER: POINTS CALCULATOR ─────────────────────────────────────────

@@ -646,9 +646,9 @@ export function dashboardOverview(user, { inquiries, profile, points, completedS
       icon: '📄',
     },
     {
-      label: 'Inquiries',
-      value: inquiries.length,
-      sub: 'Total submitted',
+      label: 'Saved Courses',
+      value: inquiries.filter(i => i.service === 'Saved Course').length || '—',
+      sub: inquiries.filter(i => i.service !== 'Saved Course').length + ' consultation request' + (inquiries.filter(i => i.service !== 'Saved Course').length !== 1 ? 's' : ''),
       color: '#1a5bb8',
       href: '/contact',
       icon: '📝',
@@ -715,18 +715,51 @@ export function dashboardOverview(user, { inquiries, profile, points, completedS
       </div>
     </div>
 
-    ${inquiries.length > 0 ? `
-    <div style="background:#fff;border-radius:12px;padding:24px;box-shadow:0 2px 8px rgba(0,0,0,.05)">
-      <div style="font-weight:700;color:#1a2744;font-size:1rem;margin-bottom:16px">📋 Recent Inquiries</div>
-      ${inquiries.slice(0,5).map(i => `
-        <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #f1f5f9;flex-wrap:wrap;gap:8px">
-          <div>
-            <div style="font-weight:600;font-size:.9rem;color:#1a2744">${esc(i.service||'General Inquiry')}${i.cricos_course_name ? ` — ${esc(i.cricos_course_name)}` : ''}</div>
-            <div style="font-size:.8rem;color:#94a3b8">${new Date(i.created_at).toLocaleDateString('en-AU',{day:'numeric',month:'short',year:'numeric'})}</div>
-          </div>
-          <span style="background:${i.kondesk_sent?'#dcfce7':'#f1f5f9'};color:${i.kondesk_sent?'#166534':'#374151'};padding:3px 10px;border-radius:12px;font-size:.8rem;font-weight:600">${i.kondesk_sent?'✓ Processing':'Received'}</span>
-        </div>`).join('')}
-    </div>` : ''}`;
+    ${(() => {
+      const savedCourses = inquiries.filter(i => i.service === 'Saved Course');
+      const actualInquiries = inquiries.filter(i => i.service !== 'Saved Course');
+      return `
+      ${savedCourses.length > 0 ? `
+      <div style="background:#fff;border-radius:12px;padding:24px;box-shadow:0 2px 8px rgba(0,0,0,.05)">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+          <div style="font-weight:700;color:#1a2744;font-size:1rem">💾 Saved Courses (${savedCourses.length})</div>
+          <a href="/courses" style="font-size:.85rem;color:#1a5bb8;font-weight:600">Search more →</a>
+        </div>
+        ${savedCourses.slice(0,5).map(i => `
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #f1f5f9;flex-wrap:wrap;gap:8px">
+            <div>
+              <div style="font-weight:600;font-size:.9rem;color:#1a2744">${esc(i.cricos_course_name||'Course')}</div>
+              <div style="font-size:.8rem;color:#64748b">${esc(i.cricos_provider||'')}${i.cricos_course_code ? ` · CRICOS: ${esc(i.cricos_course_code)}` : ''}</div>
+              <div style="font-size:.78rem;color:#94a3b8">${new Date(i.created_at).toLocaleDateString('en-AU',{day:'numeric',month:'short',year:'numeric'})}</div>
+            </div>
+            <a href="/contact?course=${encodeURIComponent(i.cricos_course_name||'')}&code=${encodeURIComponent(i.cricos_course_code||'')}&provider=${encodeURIComponent(i.cricos_provider||'')}"
+               style="background:#1a5bb8;color:#fff;padding:6px 14px;border-radius:6px;font-size:.82rem;font-weight:600;text-decoration:none;white-space:nowrap">
+               Book Consultation
+            </a>
+          </div>`).join('')}
+      </div>` : ''}
+
+      ${actualInquiries.length > 0 ? `
+      <div style="background:#fff;border-radius:12px;padding:24px;box-shadow:0 2px 8px rgba(0,0,0,.05)">
+        <div style="font-weight:700;color:#1a2744;font-size:1rem;margin-bottom:16px">📋 My Inquiries (${actualInquiries.length})</div>
+        ${actualInquiries.slice(0,5).map(i => `
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #f1f5f9;flex-wrap:wrap;gap:8px">
+            <div>
+              <div style="font-weight:600;font-size:.9rem;color:#1a2744">${esc(i.service||'General Inquiry')}${i.cricos_course_name ? ` — ${esc(i.cricos_course_name)}` : ''}</div>
+              <div style="font-size:.8rem;color:#94a3b8">${new Date(i.created_at).toLocaleDateString('en-AU',{day:'numeric',month:'short',year:'numeric'})}</div>
+            </div>
+            <span style="background:${i.kondesk_sent?'#dcfce7':'#f1f5f9'};color:${i.kondesk_sent?'#166534':'#374151'};padding:3px 10px;border-radius:12px;font-size:.8rem;font-weight:600">${i.kondesk_sent?'✓ Processing':'Received'}</span>
+          </div>`).join('')}
+      </div>` : ''}
+
+      ${savedCourses.length === 0 && actualInquiries.length === 0 ? `
+      <div style="background:#fff;border-radius:12px;padding:32px;box-shadow:0 2px 8px rgba(0,0,0,.05);text-align:center;color:#94a3b8">
+        <div style="font-size:2rem;margin-bottom:10px">🎓</div>
+        <div style="font-weight:600;color:#1a2744;margin-bottom:6px">You haven't saved any courses yet</div>
+        <p style="font-size:.9rem;margin-bottom:16px">Search CRICOS courses and save the ones you're interested in.</p>
+        <a href="/courses" class="btn btn-primary" style="padding:10px 24px;font-size:.9rem">Search Courses</a>
+      </div>` : ''}`;
+    })()}`;
 
   return dashWrap(user, 'overview', body);
 }
