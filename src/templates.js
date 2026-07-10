@@ -7,7 +7,7 @@ const CSS = `
   /* NAV */
   nav{background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.08);position:sticky;top:0;z-index:100}
   .nav-inner{max-width:1200px;margin:0 auto;padding:0 24px;display:flex;align-items:center;justify-content:space-between;height:68px}
-  .nav-logo{font-size:1.25rem;font-weight:700;color:#1a2744;display:flex;align-items:center;gap:10px}
+  .nav-logo{display:flex;align-items:center;gap:10px}
   .nav-logo span{color:#1a5bb8}
   .nav-links{display:flex;gap:28px;align-items:center;list-style:none}
   .nav-links a{font-size:.95rem;color:#1a2744;font-weight:500}
@@ -157,7 +157,7 @@ ${extraHead}
 <body>
 <nav>
   <div class="nav-inner">
-    <a href="/" class="nav-logo">🎓 Careers <span>Gateway</span></a>
+    <a href="/" class="nav-logo"><img src="https://careersgateway.com.au/wp-content/uploads/2025/06/Screenshot-2025-06-15-at-1.59.23%20PM-196x104.png" alt="Careers Gateway" style="height:44px;width:auto;display:block"></a>
     <ul class="nav-links">
       <li><a href="/">Home</a></li>
       <li><a href="/courses">Find Courses</a></li>
@@ -174,7 +174,7 @@ ${body}
   <div class="footer-inner">
     <div class="footer-grid">
       <div class="footer-col">
-        <h4>🎓 Careers Gateway</h4>
+        <img src="https://careersgateway.com.au/wp-content/uploads/2025/06/Screenshot-2025-06-15-at-1.59.23%20PM-196x104.png" alt="Careers Gateway" style="height:40px;width:auto;margin-bottom:14px;filter:brightness(0) invert(1)"><br>
         <p class="footer-contact">Your trusted partner for education, migration, and career services in Australia.<br><br>
         📍 Sydney, NSW<br>📞 +61 2 XXXX XXXX<br>✉️ info@careersgateway.com.au</p>
       </div>
@@ -214,15 +214,21 @@ function esc(str) {
 
 function homePage(user) {
   return layout('Your Gateway to Success', `
-  <div class="hero">
-    <div class="container">
-      <h1>Your Gateway to Success<br>in Australia 🇦🇺</h1>
-      <p>Guiding individuals and businesses through education, migration, and career pathways with certified, multilingual professionals.</p>
-      <div class="hero-btns">
-        <a href="/courses" class="btn btn-white">🔍 Search CRICOS Courses</a>
-        <a href="/contact" class="btn btn-outline">Book Free Consultation</a>
+  <div class="hero" style="padding:0;overflow:hidden">
+    <div class="container" style="display:grid;grid-template-columns:1fr 420px;align-items:center;min-height:480px;padding:0 24px;gap:0">
+      <div style="padding:64px 0 64px">
+        <h1 style="font-size:2.8rem;font-weight:800;line-height:1.2;margin-bottom:16px">Your Gateway to<br>Success in Australia 🇦🇺</h1>
+        <p style="font-size:1.15rem;opacity:.9;max-width:520px;margin-bottom:32px;line-height:1.7">Guiding individuals and businesses through education, migration, and career pathways with certified, multilingual professionals.</p>
+        <div class="hero-btns" style="justify-content:flex-start">
+          <a href="/courses" class="btn btn-white">🔍 Search CRICOS Courses</a>
+          <a href="/contact" class="btn btn-outline">Book Free Consultation</a>
+        </div>
+      </div>
+      <div style="align-self:stretch;overflow:hidden;display:flex;align-items:flex-end;justify-content:center">
+        <img src="https://careersgateway.com.au/wp-content/uploads/2025/06/image-removebg-preview.png" alt="Careers Gateway consultant" style="height:420px;width:auto;object-fit:contain;display:block;margin-bottom:0">
       </div>
     </div>
+    <style>@media(max-width:768px){.hero .container{grid-template-columns:1fr!important;text-align:center}.hero .container>div:last-child{display:none!important}.hero-btns{justify-content:center!important}}</style>
   </div>
 
   <div class="stats-bar">
@@ -240,20 +246,25 @@ function homePage(user) {
       <p class="section-sub">Comprehensive support for every stage of your Australian journey</p>
       <div class="services-grid">
         ${[
-          ['🎓','Education & Visa Services','Expert guidance on student visas, course selection, and institution enrolment through CRICOS-registered providers.','/services/education'],
-          ['🌏','Migration Services','Skilled migration, family visas, employer nominations, and permanent residency pathways.','/services/migration'],
-          ['💼','Recruitment & Labour Hire','Connecting skilled professionals with Australian employers. RPL-recognised workforce solutions.','/services/recruitment'],
-          ['📋','RPL Assessment','Recognition of Prior Learning for tradespeople, nurses, engineers, and other professionals.','/services/rpl'],
-          ['✅','Skills Assessment','Formal skills assessments for visa and registration purposes across multiple industry bodies.','/services/skills'],
-          ['🏥','Health Insurance (OSHC/OVHC)','Compare and buy Overseas Student Health Cover and Overseas Visitor Health Cover instantly.','/health-insurance'],
-          ['💰','Easy Tax Return','Simple, fast Australian tax returns for international students and working holiday visa holders.','/services/tax'],
-          ['❤️','Aged Care Services','Placement and support services for aged care pathways and qualifications.','/services/aged-care'],
-        ].map(([icon,title,desc,link]) => `
-          <div class="service-card">
-            <div class="service-icon">${icon}</div>
-            <h3>${title}</h3>
-            <p>${desc}</p>
-            <a href="${link}" class="service-link">Learn more →</a>
+          ['🎓','Education & Visa Services','Expert guidance on student visas, course selection, and institution enrolment through CRICOS-registered providers.','/services/education','https://careersgateway.com.au/wp-content/uploads/2025/06/Screenshot-2025-06-15-at-4.03.40%20PM.png'],
+          ['🌏','Migration Services','Skilled migration, family visas, employer nominations, and permanent residency pathways.','/services/migration','https://careersgateway.com.au/wp-content/uploads/2025/06/Screenshot-2025-06-15-at-4.04.09%20PM.png'],
+          ['💼','Recruitment & Labour Hire','Connecting skilled professionals with Australian employers. RPL-recognised workforce solutions.','/services/recruitment','https://careersgateway.com.au/wp-content/uploads/2025/06/Screenshot-2025-06-15-at-4.04.39%20PM.png'],
+          ['📋','RPL Assessment','Recognition of Prior Learning for tradespeople, nurses, engineers, and other professionals.','/services/rpl','https://careersgateway.com.au/wp-content/uploads/2025/06/Screenshot-2025-06-15-at-4.05.08%20PM.png'],
+          ['✅','Skills Assessment','Formal skills assessments for visa and registration purposes across multiple industry bodies.','/services/skills','https://careersgateway.com.au/wp-content/uploads/2025/06/Screenshot-2025-06-15-at-4.05.35%20PM.png'],
+          ['🏥','Health Insurance (OSHC/OVHC)','Compare and buy Overseas Student Health Cover and Overseas Visitor Health Cover instantly.','/health-insurance','https://careersgateway.com.au/wp-content/uploads/elementor/thumbs/pexels-photo-7163956-7163956-scaled-r7fvhsbi458lc1m0wz89g7f03sdjg52qxlmabibvpc.jpg'],
+          ['💰','Easy Tax Return','Simple, fast Australian tax returns for international students and working holiday visa holders.','/services/tax','https://careersgateway.com.au/wp-content/uploads/2025/06/pexels-photo-1236421-1236421-220x300.jpg'],
+          ['❤️','Aged Care Services','Placement and support services for aged care pathways and qualifications.','/services/aged-care','https://careersgateway.com.au/wp-content/uploads/2025/06/pixlr-image-generator-6852721300106a49ef49034b-300x300.jpg'],
+        ].map(([icon,title,desc,link,img]) => `
+          <div class="service-card" style="padding:0;overflow:hidden">
+            <div style="height:160px;overflow:hidden;background:#e8f0fe">
+              <img src="${img}" alt="${title}" style="width:100%;height:100%;object-fit:cover;display:block" loading="lazy">
+            </div>
+            <div style="padding:22px">
+              <div class="service-icon">${icon}</div>
+              <h3>${title}</h3>
+              <p>${desc}</p>
+              <a href="${link}" class="service-link">Learn more →</a>
+            </div>
           </div>
         `).join('')}
       </div>
@@ -322,21 +333,76 @@ function homePage(user) {
     </div>
   </section>
 
+  <section style="background:#f0f6ff">
+    <div class="container">
+      <div style="display:grid;grid-template-columns:340px 1fr;gap:48px;align-items:center">
+        <div>
+          <img src="https://careersgateway.com.au/wp-content/uploads/elementor/thumbs/career-bijendra-sir-r7juads0rjdgs6e5oqchau1e6jow26qbi4k3ky7bwy.jpg" alt="Bijendra Shrestha — CEO, Careers Gateway" style="width:100%;border-radius:16px;box-shadow:0 8px 32px rgba(26,91,184,.15);display:block">
+        </div>
+        <div>
+          <div style="color:#1a5bb8;font-weight:700;font-size:.9rem;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px">Message from Our CEO</div>
+          <h2 style="font-size:1.8rem;font-weight:800;color:#1a2744;margin-bottom:16px;line-height:1.3">Committed to Your<br>Australian Success</h2>
+          <p style="color:#374151;line-height:1.8;font-size:1rem;margin-bottom:12px">"At Careers Gateway, we believe every person deserves honest, expert guidance on their Australian journey — whether that's finding the right course, securing a visa, or building a career."</p>
+          <p style="color:#374151;line-height:1.8;font-size:1rem;margin-bottom:24px">"Our team of certified professionals is multilingual, experienced, and genuinely invested in your success. We don't just process paperwork — we walk the journey with you."</p>
+          <div style="font-weight:700;color:#1a2744">Bijendra Shrestha</div>
+          <div style="color:#64748b;font-size:.9rem">CEO & Founder, Careers Gateway Australia</div>
+        </div>
+      </div>
+      <style>@media(max-width:768px){.ceo-grid{grid-template-columns:1fr!important}}</style>
+    </div>
+  </section>
+
   <section style="background:#fff">
     <div class="container">
       <h2 class="section-title">What Our Clients Say</h2>
       <p class="section-sub">Real stories from real people</p>
       <div class="testi-grid">
         ${[
-          ['Priya S.','Sydney','Careers Gateway made my student visa process so easy. They found me the perfect nursing course and handled everything. Couldn\'t recommend them more highly!'],
-          ['Raj M.','Melbourne','From RPL assessment to skills recognition — the team was professional and quick. I got my qualification recognised within 3 months.'],
-          ['Anita K.','Brisbane','The migration team helped my whole family get permanent residency. They were patient, thorough, and available whenever we needed them.'],
-        ].map(([name,city,text]) => `
+          ['Priya S.','Sydney','Careers Gateway made my student visa process so easy. They found me the perfect nursing course and handled everything. Couldn\'t recommend them more highly!','https://careersgateway.com.au/wp-content/uploads/2025/06/d2b9123d-49a5-4e9e-b39d-b2ab74381797-150x150.jpeg'],
+          ['Raj M.','Melbourne','From RPL assessment to skills recognition — the team was professional and quick. I got my qualification recognised within 3 months.','https://careersgateway.com.au/wp-content/uploads/2025/06/fb1ff635-d713-4dff-8262-995ea063c13d-150x150.jpeg'],
+          ['Anita K.','Brisbane','The migration team helped my whole family get permanent residency. They were patient, thorough, and available whenever we needed them.','https://careersgateway.com.au/wp-content/uploads/2025/06/Screenshot-2025-06-15-at-4.11.05%20PM.png'],
+        ].map(([name,city,text,photo]) => `
           <div class="testi-card">
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
+              <img src="${photo}" alt="${name}" style="width:48px;height:48px;border-radius:50%;object-fit:cover">
+              <div>
+                <div class="testi-name">${name}</div>
+                <div style="color:#94a3b8;font-size:.85rem">${city}</div>
+              </div>
+            </div>
             <div class="stars">★★★★★</div>
             <p class="testi-text">"${text}"</p>
-            <div class="testi-name">${name} <span style="color:#94a3b8;font-weight:400">— ${city}</span></div>
           </div>
+        `).join('')}
+      </div>
+    </div>
+  </section>
+
+  <section style="background:#f8faff">
+    <div class="container">
+      <h2 class="section-title">Latest News & Insights</h2>
+      <p class="section-sub">Stay informed about Australian migration, education, and career developments</p>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:24px">
+        ${[
+          ['How RPL Can Fast-Track Your PR Path','Recognition of Prior Learning is one of the fastest routes to Australian permanent residency for skilled tradespeople.','/services/rpl','https://careersgateway.com.au/wp-content/uploads/elementor/thumbs/RPL-r8449cmkno5if890q65m2xlkoc0jqxjasoh58up5zc.png'],
+          ['Australian Migration Rules Mid-2025','Key changes to skilled migration, student visas, and employer nominations you need to know about.','/services/migration','https://careersgateway.com.au/wp-content/uploads/elementor/thumbs/Screenshot-2025-06-18-at-2.18.37%20PM-r7hrso8fnf62qr90qrbdu250gfibcrnj2mufemzfrc.png'],
+          ['Scholarships for International Students','2025 scholarship opportunities at Australian universities for international students.','/courses','https://careersgateway.com.au/wp-content/uploads/elementor/thumbs/mentor-3512369_1280-r843m5xw2sew1hxg45cwks8966alvphnlx5z352rgo.jpg'],
+          ['Beware of Migration Scams','How to identify dodgy migration agents and protect yourself from visa fraud in Australia.','/contact','https://careersgateway.com.au/wp-content/uploads/elementor/thumbs/compressed_fraud_image_under_2mb-r7jridq6vxbz216bdpsd9kodliliwqutcwixsf25qg.jpg'],
+          ['Future of Australian Migration','What changes are coming to Australian migration policy over the next 5 years.','/services/migration','https://careersgateway.com.au/wp-content/uploads/elementor/thumbs/Migration-future-australia-r7jqyjculu61ydzz94zwmky24oekes2taopx24hd3c.png'],
+          ['Navigating PR Pathways','Your complete guide to Australian permanent residency — pathways, timelines, and requirements.','/services/migration','https://careersgateway.com.au/wp-content/uploads/elementor/thumbs/PR-Australia-r7jqpvafkuauvul9ve3rmrp0wr4pf9nxfs4pq9c2h4.png'],
+        ].map(([title,excerpt,link,img]) => `
+          <a href="${link}" style="text-decoration:none;color:inherit">
+            <div style="background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.06);transition:.2s;height:100%" onmouseover="this.style.transform='translateY(-3px)';this.style.boxShadow='0 8px 24px rgba(26,91,184,.12)'" onmouseout="this.style.transform='';this.style.boxShadow='0 2px 8px rgba(0,0,0,.06)'">
+              <div style="height:160px;overflow:hidden;background:#e8f0fe">
+                <img src="${img}" alt="${title}" style="width:100%;height:100%;object-fit:cover;display:block" loading="lazy">
+              </div>
+              <div style="padding:18px">
+                <h4 style="font-weight:700;font-size:.95rem;color:#1a2744;margin-bottom:8px;line-height:1.4">${title}</h4>
+                <p style="font-size:.85rem;color:#64748b;line-height:1.6">${excerpt}</p>
+                <div style="margin-top:12px;font-size:.85rem;font-weight:600;color:#1a5bb8">Read more →</div>
+              </div>
+            </div>
+          </a>
         `).join('')}
       </div>
     </div>
@@ -415,30 +481,67 @@ function coursesPage(user, results, params, fromCache, error) {
           <p>Try broadening your search — use fewer keywords or remove filters</p>
         </div>
       ` : `
-        <div class="results-header">
-          <div class="results-count"><strong>${results.length}</strong> courses found ${fromCache ? '<span style="color:#94a3b8;font-size:.8rem">(cached)</span>' : ''}</div>
-          ${user ? '' : '<a href="/register" class="btn btn-primary btn-sm">Save courses — Register free</a>'}
-        </div>
-        ${results.map(c => `
-          <div class="course-card">
-            <div class="course-info">
-              <h3>${esc(c.courseName || 'Course')}</h3>
-              <div style="color:#64748b;font-size:.9rem;margin-bottom:6px">${esc(c.provider || '')}</div>
-              <div class="course-meta">
-                ${c.cricosCode ? `<span class="badge badge-blue">CRICOS: ${esc(c.cricosCode)}</span>` : ''}
-                ${c.level ? `<span class="badge badge-gray">${esc(c.level)}</span>` : ''}
-                ${(c.city || c.state) ? `<span class="badge badge-gray">📍 ${esc([c.city,c.state].filter(Boolean).join(', '))}</span>` : ''}
-                ${c.durationWeeks ? `<span class="badge badge-gray">⏱ ${esc(String(c.durationWeeks))} weeks</span>` : ''}
-                ${c.tuitionFee ? `<span class="badge badge-green">💰 ${esc(c.tuitionFee)}</span>` : ''}
-                ${c.vetCode ? `<span class="badge badge-gray">VET: ${esc(c.vetCode)}</span>` : ''}
+        ${!user ? `
+          <div class="results-header">
+            <div class="results-count"><strong>${results.length}</strong> courses found</div>
+          </div>
+          <div style="position:relative">
+            ${results.slice(0,3).map(c => `
+              <div class="course-card" style="filter:blur(5px);user-select:none;pointer-events:none">
+                <div class="course-info">
+                  <h3>${esc(c.courseName || 'Course')}</h3>
+                  <div style="color:#64748b;font-size:.9rem;margin-bottom:6px">${esc(c.provider || '')}</div>
+                  <div class="course-meta">
+                    ${c.cricosCode ? `<span class="badge badge-blue">CRICOS: ${esc(c.cricosCode)}</span>` : ''}
+                    ${c.level ? `<span class="badge badge-gray">${esc(c.level)}</span>` : ''}
+                    ${(c.city || c.state) ? `<span class="badge badge-gray">📍 ${esc([c.city,c.state].filter(Boolean).join(', '))}</span>` : ''}
+                    ${c.durationWeeks ? `<span class="badge badge-gray">⏱ ${esc(String(c.durationWeeks))} weeks</span>` : ''}
+                    ${c.tuitionFee ? `<span class="badge badge-green">💰 ${esc(c.tuitionFee)}</span>` : ''}
+                  </div>
+                </div>
+                <div class="course-actions">
+                  <span class="btn btn-primary btn-sm">Book Consultation</span>
+                </div>
+              </div>
+            `).join('')}
+            <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(to bottom,rgba(248,250,255,0) 0%,rgba(248,250,255,.92) 30%,rgba(248,250,255,1) 100%)">
+              <div style="text-align:center;padding:32px;max-width:480px">
+                <div style="font-size:2.5rem;margin-bottom:12px">🔓</div>
+                <h3 style="font-size:1.4rem;font-weight:800;color:#1a2744;margin-bottom:10px">Create a free account to view all ${results.length} courses</h3>
+                <p style="color:#64748b;margin-bottom:24px;line-height:1.6">Register in 30 seconds to access full course details, save favourites, and book consultations with our expert advisors.</p>
+                <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+                  <a href="/register?redirect=/courses%3F${encodeURIComponent(Object.entries(params).filter(([,v])=>v).map(([k,v])=>k+'='+encodeURIComponent(v)).join('&'))}" class="btn btn-primary" style="padding:12px 28px">Create Free Account</a>
+                  <a href="/login?redirect=/courses%3F${encodeURIComponent(Object.entries(params).filter(([,v])=>v).map(([k,v])=>k+'='+encodeURIComponent(v)).join('&'))}" class="btn" style="padding:12px 28px;background:#fff;color:#1a5bb8;border:2px solid #1a5bb8">Login</a>
+                </div>
+                <div style="margin-top:16px;font-size:.85rem;color:#94a3b8">Free forever · No credit card required</div>
               </div>
             </div>
-            <div class="course-actions">
-              <a href="/contact?course=${encodeURIComponent(c.courseName||'')}&code=${encodeURIComponent(c.cricosCode||'')}&provider=${encodeURIComponent(c.provider||'')}" class="btn btn-primary btn-sm">Book Consultation</a>
-              ${user ? `<a href="/dashboard/save?code=${encodeURIComponent(c.cricosCode||'')}&name=${encodeURIComponent(c.courseName||'')}&provider=${encodeURIComponent(c.provider||'')}" class="btn btn-sm" style="background:#f0f6ff;color:#1a5bb8;text-align:center">💾 Save Course</a>` : ''}
-            </div>
           </div>
-        `).join('')}
+        ` : `
+          <div class="results-header">
+            <div class="results-count"><strong>${results.length}</strong> courses found ${fromCache ? '<span style="color:#94a3b8;font-size:.8rem">(cached)</span>' : ''}</div>
+          </div>
+          ${results.map(c => `
+            <div class="course-card">
+              <div class="course-info">
+                <h3>${esc(c.courseName || 'Course')}</h3>
+                <div style="color:#64748b;font-size:.9rem;margin-bottom:6px">${esc(c.provider || '')}</div>
+                <div class="course-meta">
+                  ${c.cricosCode ? `<span class="badge badge-blue">CRICOS: ${esc(c.cricosCode)}</span>` : ''}
+                  ${c.level ? `<span class="badge badge-gray">${esc(c.level)}</span>` : ''}
+                  ${(c.city || c.state) ? `<span class="badge badge-gray">📍 ${esc([c.city,c.state].filter(Boolean).join(', '))}</span>` : ''}
+                  ${c.durationWeeks ? `<span class="badge badge-gray">⏱ ${esc(String(c.durationWeeks))} weeks</span>` : ''}
+                  ${c.tuitionFee ? `<span class="badge badge-green">💰 ${esc(c.tuitionFee)}</span>` : ''}
+                  ${c.vetCode ? `<span class="badge badge-gray">VET: ${esc(c.vetCode)}</span>` : ''}
+                </div>
+              </div>
+              <div class="course-actions">
+                <a href="/contact?course=${encodeURIComponent(c.courseName||'')}&code=${encodeURIComponent(c.cricosCode||'')}&provider=${encodeURIComponent(c.provider||'')}" class="btn btn-primary btn-sm">Book Consultation</a>
+                <a href="/dashboard/save?code=${encodeURIComponent(c.cricosCode||'')}&name=${encodeURIComponent(c.courseName||'')}&provider=${encodeURIComponent(c.provider||'')}" class="btn btn-sm" style="background:#f0f6ff;color:#1a5bb8;text-align:center">💾 Save Course</a>
+              </div>
+            </div>
+          `).join('')}
+        `}
       `}
 
       <div style="margin-top:32px;padding:20px;background:#f0f6ff;border-radius:10px;text-align:center">
@@ -660,12 +763,15 @@ function contactPage(user, params = {}, success = false, error = '') {
 
 function healthInsurancePage(user, konpareKey) {
   return layout('Health Insurance — OSHC & OVHC', `
-  <section style="background:linear-gradient(135deg,#064e3b,#059669);padding:48px 24px;color:#fff;text-align:center">
-    <div class="container">
+  <div style="background:linear-gradient(135deg,#064e3b,#059669);padding:48px 24px;color:#fff;overflow:hidden;position:relative">
+    <div style="position:absolute;right:0;top:0;bottom:0;width:400px;overflow:hidden;opacity:.25">
+      <img src="https://careersgateway.com.au/wp-content/uploads/elementor/thumbs/pexels-photo-7163956-7163956-scaled-r7fvhsbi458lc1m0wz89g7f03sdjg52qxlmabibvpc.jpg" style="width:100%;height:100%;object-fit:cover" alt="">
+    </div>
+    <div class="container" style="position:relative;text-align:center">
       <h1 style="font-size:2rem;font-weight:800;margin-bottom:8px">🏥 Health Insurance for Students & Visitors</h1>
       <p style="opacity:.9">Compare and buy OSHC & OVHC policies instantly through our Konpare-powered portal</p>
     </div>
-  </section>
+  </div>
   <section>
     <div class="container">
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px;margin-bottom:40px">
@@ -687,7 +793,7 @@ function healthInsurancePage(user, konpareKey) {
       <h2 style="font-size:1.5rem;font-weight:700;margin-bottom:20px;color:#1a2744">Compare & Buy Now</h2>
       <div class="widget-wrap">
         <iframe
-          src="https://app.konpare.online/widget/?key=${esc(konpareKey)}"
+          src="https://cga.konpare.online/"
           title="OSHC OVHC Health Insurance Comparison"
           allow="payment"
           loading="lazy">
