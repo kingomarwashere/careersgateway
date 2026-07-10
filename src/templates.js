@@ -142,7 +142,17 @@ const CSS = `
   }
 `;
 
-function layout(title, body, user = null, extraHead = '') {
+const BASE_URL = 'https://careers.bored.investments';
+const DEFAULT_IMAGE = 'https://careersgateway.com.au/wp-content/uploads/2025/06/pexels-photo-1236421-1236421-scaled.jpg';
+const SITE_NAME = 'Careers Gateway Australia';
+
+function layout(title, body, user = null, extraHead = '', meta = {}) {
+  const fullTitle = `${title} — ${SITE_NAME}`;
+  const description = meta.description || 'Your trusted partner for education, migration, recruitment, and career services in Australia. Search CRICOS courses, get expert visa advice, and more.';
+  const image = meta.image || DEFAULT_IMAGE;
+  const url = meta.url ? `${BASE_URL}${meta.url}` : BASE_URL;
+  const type = meta.type || 'website';
+
   const navUser = user
     ? `<div class="nav-user"><span>Hi, <strong>${esc(user.full_name.split(' ')[0])}</strong></span><a href="/dashboard" class="btn btn-primary btn-sm" style="padding:7px 16px;font-size:.85rem">Dashboard</a><a href="/logout" style="font-size:.85rem;color:#64748b">Logout</a></div>`
     : `<div class="nav-user"><a href="/login">Login</a><a href="/register" class="btn btn-primary btn-sm" style="padding:7px 16px;font-size:.85rem">Register</a></div>`;
@@ -150,7 +160,28 @@ function layout(title, body, user = null, extraHead = '') {
 <html lang="en">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>${esc(title)} — Careers Gateway Australia</title>
+<title>${esc(fullTitle)}</title>
+<meta name="description" content="${esc(description)}">
+<link rel="canonical" href="${esc(url)}">
+
+<!-- Open Graph -->
+<meta property="og:type" content="${esc(type)}">
+<meta property="og:site_name" content="${esc(SITE_NAME)}">
+<meta property="og:title" content="${esc(fullTitle)}">
+<meta property="og:description" content="${esc(description)}">
+<meta property="og:image" content="${esc(image)}">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="${esc(url)}">
+<meta property="og:locale" content="en_AU">
+
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="${esc(fullTitle)}">
+<meta name="twitter:description" content="${esc(description)}">
+<meta name="twitter:image" content="${esc(image)}">
+<meta name="twitter:site" content="@careersgateway">
+
 <link rel="icon" type="image/png" sizes="32x32" href="https://careersgateway.com.au/wp-content/uploads/2025/06/cropped-Screenshot-2025-06-15-at-1.59.23_PM-300x159-removebg-preview-32x32.png">
 <link rel="apple-touch-icon" sizes="180x180" href="https://careersgateway.com.au/wp-content/uploads/2025/06/cropped-Screenshot-2025-06-15-at-1.59.23_PM-300x159-removebg-preview-180x180.png">
 <style>${CSS}</style>
@@ -420,7 +451,7 @@ function homePage(user) {
       </div>
     </div>
   </section>
-  `, user);
+  `, user, '', { url: '/', description: 'Careers Gateway Australia — your trusted partner for education, migration, recruitment, RPL, and visa services. Search 26,000+ CRICOS courses and book a free consultation.', image: 'https://careersgateway.com.au/wp-content/uploads/2025/06/pexels-photo-1236421-1236421-scaled.jpg' });
 }
 
 function coursesPage(user, results, params, fromCache, error) {
@@ -428,6 +459,7 @@ function coursesPage(user, results, params, fromCache, error) {
   const stateOptions = ['NSW','VIC','QLD','WA','SA','TAS','ACT','NT'];
   const levelOptions = [['1','Bachelor Degree'],['2','Master Degree'],['3','Doctoral Degree'],['4','Diploma'],['5','Certificate'],['6','Advanced Diploma'],['7','Graduate Certificate'],['8','Graduate Diploma']];
 
+  const courseMeta = { url: '/courses', description: 'Search 26,000+ CRICOS-registered courses from Australian universities and colleges. Filter by state, level, and field of study. Free account required to view results.', image: 'https://careersgateway.com.au/wp-content/uploads/2025/06/pexels-photo-1236421-1236421-scaled.jpg' };
   return layout('CRICOS Course Search', `
   <section style="background:linear-gradient(135deg,#1a2744,#1a5bb8);padding:40px 24px;color:#fff;text-align:center">
     <div class="container">
@@ -553,7 +585,7 @@ function coursesPage(user, results, params, fromCache, error) {
       </div>
     </div>
   </section>
-  `, user);
+  `, user, '', courseMeta);
 }
 
 function registerPage(error, values = {}) {
@@ -591,7 +623,7 @@ function registerPage(error, values = {}) {
       <div class="form-footer">Already have an account? <a href="/login">Login here</a></div>
     </div>
   </section>
-  `);
+  `, null, '', { url: '/register', description: 'Create a free Careers Gateway account to access CRICOS course search, save favourites, and book consultations with our expert advisors.' });
 }
 
 function loginPage(error, redirect = '') {
@@ -616,13 +648,13 @@ function loginPage(error, redirect = '') {
       <div class="form-footer">Don't have an account? <a href="/register">Register free</a></div>
     </div>
   </section>
-  `);
+  `, null, '', { url: '/login', description: 'Login to your Careers Gateway account to access CRICOS course search, saved courses, and your consultation history.' });
 }
 
 function dashboardPage(user, inquiries) {
   const initials = user.full_name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0,2);
   return layout('Dashboard', `
-  <section style="padding:40px 24px">
+  <section style="padding:40px 24px;min-height:80vh">
     <div class="container">
       <div class="dash-grid">
         <div class="dash-sidebar">
@@ -684,7 +716,7 @@ function dashboardPage(user, inquiries) {
       </div>
     </div>
   </section>
-  `, user);
+  `, user, '', { url: '/dashboard', description: 'Your Careers Gateway dashboard — manage course inquiries, saved courses, and your profile.' });
 }
 
 function contactPage(user, params = {}, success = false, error = '') {
@@ -761,7 +793,7 @@ function contactPage(user, params = {}, success = false, error = '') {
     </div>
   </section>
   <style>.contact-layout{grid-template-columns:1fr 340px}@media(max-width:768px){.contact-layout{grid-template-columns:1fr}}</style>
-  `, user);
+  `, user, '', { url: '/contact', description: 'Book a free consultation with Careers Gateway. Our certified experts can help with education, visa, migration, RPL, and skills assessment in Australia.', image: 'https://careersgateway.com.au/wp-content/uploads/elementor/thumbs/career-bijendra-sir-r7juads0rjdgs6e5oqchau1e6jow26qbi4k3ky7bwy.jpg' });
 }
 
 function healthInsurancePage(user, konpareKey) {
@@ -808,7 +840,7 @@ function healthInsurancePage(user, konpareKey) {
       </div>
     </div>
   </section>
-  `, user);
+  `, user, '', { url: '/health-insurance', description: 'Compare and buy OSHC and OVHC health insurance for international students and visitors in Australia. Powered by Konpare — instant online purchase.', image: 'https://careersgateway.com.au/wp-content/uploads/elementor/thumbs/pexels-photo-7163956-7163956-scaled-r7fvhsbi458lc1m0wz89g7f03sdjg52qxlmabibvpc.jpg' });
 }
 
 function servicesPage(user, service) {
@@ -851,7 +883,7 @@ function servicesPage(user, service) {
       </div>
     </div>
   </section>
-  `, user);
+  `, user, '', { url: `/services/${service}`, description: page.desc, image: DEFAULT_IMAGE });
 }
 
 export { layout, esc, homePage, coursesPage, registerPage, loginPage, dashboardPage, contactPage, healthInsurancePage, servicesPage };
