@@ -151,13 +151,15 @@ function layout(title, body, user = null, extraHead = '') {
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>${esc(title)} — Careers Gateway Australia</title>
+<link rel="icon" type="image/png" sizes="32x32" href="https://careersgateway.com.au/wp-content/uploads/2025/06/cropped-Screenshot-2025-06-15-at-1.59.23_PM-300x159-removebg-preview-32x32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="https://careersgateway.com.au/wp-content/uploads/2025/06/cropped-Screenshot-2025-06-15-at-1.59.23_PM-300x159-removebg-preview-180x180.png">
 <style>${CSS}</style>
 ${extraHead}
 </head>
 <body>
 <nav>
   <div class="nav-inner">
-    <a href="/" class="nav-logo"><img src="https://careersgateway.com.au/wp-content/uploads/2025/06/Screenshot-2025-06-15-at-1.59.23%20PM-196x104.png" alt="Careers Gateway" style="height:44px;width:auto;display:block"></a>
+    <a href="/" class="nav-logo"><img src="https://careersgateway.com.au/wp-content/uploads/2025/06/cropped-Screenshot-2025-06-15-at-1.59.23_PM-300x159-removebg-preview-192x192.png" alt="Careers Gateway" style="height:44px;width:auto;display:block"></a>
     <ul class="nav-links">
       <li><a href="/">Home</a></li>
       <li><a href="/courses">Find Courses</a></li>
@@ -174,7 +176,7 @@ ${body}
   <div class="footer-inner">
     <div class="footer-grid">
       <div class="footer-col">
-        <img src="https://careersgateway.com.au/wp-content/uploads/2025/06/Screenshot-2025-06-15-at-1.59.23%20PM-196x104.png" alt="Careers Gateway" style="height:40px;width:auto;margin-bottom:14px;filter:brightness(0) invert(1)"><br>
+        <img src="https://careersgateway.com.au/wp-content/uploads/2025/06/cropped-Screenshot-2025-06-15-at-1.59.23_PM-300x159-removebg-preview-192x192.png" alt="Careers Gateway" style="height:40px;width:auto;margin-bottom:14px;filter:brightness(0) invert(1)"><br>
         <p class="footer-contact">Your trusted partner for education, migration, and career services in Australia.<br><br>
         📍 Sydney, NSW<br>📞 +61 2 XXXX XXXX<br>✉️ info@careersgateway.com.au</p>
       </div>
@@ -246,11 +248,11 @@ function homePage(user) {
       <p class="section-sub">Comprehensive support for every stage of your Australian journey</p>
       <div class="services-grid">
         ${[
-          ['🎓','Education & Visa Services','Expert guidance on student visas, course selection, and institution enrolment through CRICOS-registered providers.','/services/education','https://careersgateway.com.au/wp-content/uploads/2025/06/Screenshot-2025-06-15-at-4.03.40%20PM.png'],
-          ['🌏','Migration Services','Skilled migration, family visas, employer nominations, and permanent residency pathways.','/services/migration','https://careersgateway.com.au/wp-content/uploads/2025/06/Screenshot-2025-06-15-at-4.04.09%20PM.png'],
-          ['💼','Recruitment & Labour Hire','Connecting skilled professionals with Australian employers. RPL-recognised workforce solutions.','/services/recruitment','https://careersgateway.com.au/wp-content/uploads/2025/06/Screenshot-2025-06-15-at-4.04.39%20PM.png'],
-          ['📋','RPL Assessment','Recognition of Prior Learning for tradespeople, nurses, engineers, and other professionals.','/services/rpl','https://careersgateway.com.au/wp-content/uploads/2025/06/Screenshot-2025-06-15-at-4.05.08%20PM.png'],
-          ['✅','Skills Assessment','Formal skills assessments for visa and registration purposes across multiple industry bodies.','/services/skills','https://careersgateway.com.au/wp-content/uploads/2025/06/Screenshot-2025-06-15-at-4.05.35%20PM.png'],
+          ['🎓','Education & Visa Services','Expert guidance on student visas, course selection, and institution enrolment through CRICOS-registered providers.','/services/education','https://careersgateway.com.au/wp-content/uploads/2025/06/pexels-photo-1236421-1236421-752x1024.jpg'],
+          ['🌏','Migration Services','Skilled migration, family visas, employer nominations, and permanent residency pathways.','/services/migration','https://careersgateway.com.au/wp-content/uploads/elementor/thumbs/Migration-future-australia-r7jqyjculu61ydzz94zwmky24oekes2taopx24hd3c.png'],
+          ['💼','Recruitment & Labour Hire','Connecting skilled professionals with Australian employers. RPL-recognised workforce solutions.','/services/recruitment','https://careersgateway.com.au/wp-content/uploads/2025/07/mentor-3512369_1280.jpg'],
+          ['📋','RPL Assessment','Recognition of Prior Learning for tradespeople, nurses, engineers, and other professionals.','/services/rpl','https://careersgateway.com.au/wp-content/uploads/elementor/thumbs/RPL-r8449cmkno5if890q65m2xlkoc0jqxjasoh58up5zc.png'],
+          ['✅','Skills Assessment','Formal skills assessments for visa and registration purposes across multiple industry bodies.','/services/skills','https://careersgateway.com.au/wp-content/uploads/elementor/thumbs/PR-Australia-r7jqpvafkuauvul9ve3rmrp0wr4pf9nxfs4pq9c2h4.png'],
           ['🏥','Health Insurance (OSHC/OVHC)','Compare and buy Overseas Student Health Cover and Overseas Visitor Health Cover instantly.','/health-insurance','https://careersgateway.com.au/wp-content/uploads/elementor/thumbs/pexels-photo-7163956-7163956-scaled-r7fvhsbi458lc1m0wz89g7f03sdjg52qxlmabibvpc.jpg'],
           ['💰','Easy Tax Return','Simple, fast Australian tax returns for international students and working holiday visa holders.','/services/tax','https://careersgateway.com.au/wp-content/uploads/2025/06/pexels-photo-1236421-1236421-220x300.jpg'],
           ['❤️','Aged Care Services','Placement and support services for aged care pathways and qualifications.','/services/aged-care','https://careersgateway.com.au/wp-content/uploads/2025/06/pixlr-image-generator-6852721300106a49ef49034b-300x300.jpg'],
@@ -360,7 +362,7 @@ function homePage(user) {
         ${[
           ['Priya S.','Sydney','Careers Gateway made my student visa process so easy. They found me the perfect nursing course and handled everything. Couldn\'t recommend them more highly!','https://careersgateway.com.au/wp-content/uploads/2025/06/d2b9123d-49a5-4e9e-b39d-b2ab74381797-150x150.jpeg'],
           ['Raj M.','Melbourne','From RPL assessment to skills recognition — the team was professional and quick. I got my qualification recognised within 3 months.','https://careersgateway.com.au/wp-content/uploads/2025/06/fb1ff635-d713-4dff-8262-995ea063c13d-150x150.jpeg'],
-          ['Anita K.','Brisbane','The migration team helped my whole family get permanent residency. They were patient, thorough, and available whenever we needed them.','https://careersgateway.com.au/wp-content/uploads/2025/06/Screenshot-2025-06-15-at-4.11.05%20PM.png'],
+          ['Anita K.','Brisbane','The migration team helped my whole family get permanent residency. They were patient, thorough, and available whenever we needed them.','https://careersgateway.com.au/wp-content/uploads/2025/06/pixlr-image-generator-6852721300106a49ef49034b-300x300.jpg'],
         ].map(([name,city,text,photo]) => `
           <div class="testi-card">
             <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
@@ -384,8 +386,8 @@ function homePage(user) {
       <p class="section-sub">Stay informed about Australian migration, education, and career developments</p>
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:24px">
         ${[
-          ['How RPL Can Fast-Track Your PR Path','Recognition of Prior Learning is one of the fastest routes to Australian permanent residency for skilled tradespeople.','/services/rpl','https://careersgateway.com.au/wp-content/uploads/elementor/thumbs/RPL-r8449cmkno5if890q65m2xlkoc0jqxjasoh58up5zc.png'],
-          ['Australian Migration Rules Mid-2025','Key changes to skilled migration, student visas, and employer nominations you need to know about.','/services/migration','https://careersgateway.com.au/wp-content/uploads/elementor/thumbs/Screenshot-2025-06-18-at-2.18.37%20PM-r7hrso8fnf62qr90qrbdu250gfibcrnj2mufemzfrc.png'],
+          ['How RPL Can Fast-Track Your PR Path','Recognition of Prior Learning is one of the fastest routes to Australian permanent residency for skilled tradespeople.','/services/rpl','https://careersgateway.com.au/wp-content/uploads/2025/07/RPL.png'],
+          ['Australian Migration Rules Mid-2025','Key changes to skilled migration, student visas, and employer nominations you need to know about.','/services/migration','https://careersgateway.com.au/wp-content/uploads/elementor/thumbs/PR-Australia-r7jqpvafkuauvul9ve3rmrp0wr4pf9nxfs4pq9c2h4.png'],
           ['Scholarships for International Students','2025 scholarship opportunities at Australian universities for international students.','/courses','https://careersgateway.com.au/wp-content/uploads/elementor/thumbs/mentor-3512369_1280-r843m5xw2sew1hxg45cwks8966alvphnlx5z352rgo.jpg'],
           ['Beware of Migration Scams','How to identify dodgy migration agents and protect yourself from visa fraud in Australia.','/contact','https://careersgateway.com.au/wp-content/uploads/elementor/thumbs/compressed_fraud_image_under_2mb-r7jridq6vxbz216bdpsd9kodliliwqutcwixsf25qg.jpg'],
           ['Future of Australian Migration','What changes are coming to Australian migration policy over the next 5 years.','/services/migration','https://careersgateway.com.au/wp-content/uploads/elementor/thumbs/Migration-future-australia-r7jqyjculu61ydzz94zwmky24oekes2taopx24hd3c.png'],
