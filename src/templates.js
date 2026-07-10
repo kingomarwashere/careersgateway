@@ -142,7 +142,7 @@ const CSS = `
   }
 `;
 
-const BASE_URL = 'https://careers.bored.investments';
+const BASE_URL = 'https://careersgateway.com.au';
 const DEFAULT_IMAGE = 'https://careersgateway.com.au/wp-content/uploads/2025/06/pexels-photo-1236421-1236421-scaled.jpg';
 const SITE_NAME = 'Careers Gateway Australia';
 

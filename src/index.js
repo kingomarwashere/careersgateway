@@ -14,6 +14,17 @@ import {
 
 const app = new Hono();
 
+// ── www → apex redirect ──────────────────────────────────────────────────────
+app.use('*', async (c, next) => {
+  const host = c.req.header('host') || '';
+  if (host.startsWith('www.')) {
+    const url = new URL(c.req.url);
+    url.hostname = url.hostname.replace(/^www\./, '');
+    return c.redirect(url.toString(), 301);
+  }
+  await next();
+});
+
 // ── Auth middleware (attaches user to context) ──────────────────────────────
 app.use('*', async (c, next) => {
   c.set('user', await getCurrentUser(c.env, c));

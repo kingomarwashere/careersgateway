@@ -6,6 +6,12 @@ compatibility_flags = ["nodejs_compat"]
 [[custom_domains]]
 pattern = "careers.bored.investments"
 
+[[custom_domains]]
+pattern = "careersgateway.com.au"
+
+[[custom_domains]]
+pattern = "www.careersgateway.com.au"
+
 [[d1_databases]]
 binding = "DB"
 database_name = "careersgateway-db"
