@@ -158,34 +158,96 @@ const BASE_URL = 'https://careersgateway.com.au';
 const DEFAULT_IMAGE = 'https://careersgateway.com.au/wp-content/uploads/2025/06/pexels-photo-1236421-1236421-scaled.jpg';
 const SITE_NAME = 'Careers Gateway Australia';
 
-function announcementBanner(ann) {
-  if (!ann) return '';
-  return `
-<div id="cg-ann" style="background:linear-gradient(90deg,#ff6b00,#e63900);color:#fff;padding:0;overflow:hidden;position:relative;z-index:99">
-  <div style="max-width:1200px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;gap:16px;flex-wrap:wrap">
-    <span style="font-size:1.3rem">🎉</span>
-    <div style="flex:1;min-width:200px">
-      <strong style="font-size:1rem">${esc(ann.title)}</strong>
-      <span style="margin-left:10px;font-size:.9rem;opacity:.92">${esc(ann.body)}</span>
+function announcementBanner(anns) {
+  if (!anns || !anns.length) return '';
+  const slides = anns.map((a, i) => `
+  <div class="cg-slide" id="cg-slide-${a.id}" data-ann="${a.id}" style="display:${i===0?'flex':'none'};align-items:center;gap:16px;flex-wrap:wrap;min-width:0">
+    <span style="font-size:1.2rem;flex-shrink:0">🎉</span>
+    <div style="flex:1;min-width:0;overflow:hidden">
+      <strong style="font-size:.97rem">${esc(a.title)}</strong>
+      <span style="margin-left:8px;font-size:.88rem;opacity:.93">${esc(a.body)}</span>
     </div>
-    ${ann.cta_label && ann.cta_url ? `<a href="${esc(ann.cta_url)}" style="background:#fff;color:#e63900;font-weight:700;padding:8px 20px;border-radius:6px;font-size:.9rem;white-space:nowrap;text-decoration:none" onmouseover="this.style.background='#fff3ee'" onmouseout="this.style.background='#fff'">${esc(ann.cta_label)}</a>` : ''}
-    <button onclick="dismissAnn(${ann.id})" aria-label="Dismiss" style="background:rgba(255,255,255,.25);border:none;color:#fff;width:28px;height:28px;border-radius:50%;font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;line-height:1">×</button>
+    ${a.cta_label && a.cta_url ? `<a href="${esc(a.cta_url)}" style="background:#fff;color:#e63900;font-weight:700;padding:7px 18px;border-radius:6px;font-size:.85rem;white-space:nowrap;text-decoration:none;flex-shrink:0">${esc(a.cta_label)}</a>` : ''}
+    <button onclick="cgDismiss(${a.id})" aria-label="Dismiss this announcement" style="background:rgba(255,255,255,.25);border:none;color:#fff;width:26px;height:26px;border-radius:50%;font-size:1rem;cursor:pointer;flex-shrink:0;line-height:26px;text-align:center">×</button>
+  </div>`).join('');
+
+  const dots = anns.length > 1 ? `
+  <div id="cg-dots" style="display:flex;gap:6px;align-items:center;justify-content:center;padding:4px 0 6px;flex-shrink:0">
+    ${anns.map((a, i) => `<button onclick="cgGo(${i})" id="cg-dot-${i}" style="width:${i===0?'18px':'8px'};height:8px;border-radius:4px;border:none;background:${i===0?'#fff':'rgba(255,255,255,.45)'};cursor:pointer;transition:.3s;padding:0" aria-label="Announcement ${i+1}"></button>`).join('')}
+  </div>` : '';
+
+  const navButtons = anns.length > 1 ? `
+  <button onclick="cgPrev()" aria-label="Previous" style="background:rgba(255,255,255,.2);border:none;color:#fff;width:26px;height:26px;border-radius:50%;font-size:.9rem;cursor:pointer;flex-shrink:0;line-height:26px;text-align:center">‹</button>
+  <button onclick="cgNext()" aria-label="Next" style="background:rgba(255,255,255,.2);border:none;color:#fff;width:26px;height:26px;border-radius:50%;font-size:.9rem;cursor:pointer;flex-shrink:0;line-height:26px;text-align:center">›</button>` : '';
+
+  return `
+<div id="cg-ann-wrap" style="background:linear-gradient(90deg,#e63900,#ff6b00);color:#fff;position:relative;z-index:99">
+  <div style="max-width:1200px;margin:0 auto;padding:10px 16px;display:flex;flex-direction:column;gap:0">
+    <div style="display:flex;align-items:center;gap:10px">
+      ${navButtons}
+      <div id="cg-slides" style="flex:1;min-width:0;overflow:hidden">${slides}</div>
+    </div>
+    ${dots}
   </div>
 </div>
 <script>
 (function(){
-  var k='cg-ann-dismissed-${ann.id}';
-  if(localStorage.getItem(k)){document.getElementById('cg-ann').style.display='none';}
+  var anns=${JSON.stringify(anns.map(a=>a.id))};
+  var cur=0, timer=null;
+
+  function dismissed(id){return!!localStorage.getItem('cg-ann-d-'+id);}
+  function visible(){return anns.filter(function(id){return!dismissed(id);});}
+
+  function render(){
+    var vis=visible();
+    if(!vis.length){
+      var w=document.getElementById('cg-ann-wrap');
+      if(w)w.style.display='none';
+      return;
+    }
+    // Remap cur to visible list
+    if(cur>=vis.length)cur=0;
+    var showId=vis[cur];
+    anns.forEach(function(id,i){
+      var el=document.getElementById('cg-slide-'+id);
+      if(el)el.style.display=(id===showId)?'flex':'none';
+    });
+    // Update dots
+    var dots=document.querySelectorAll('#cg-dots button');
+    dots.forEach(function(d,i){
+      var active=i===cur;
+      d.style.width=active?'18px':'8px';
+      d.style.background=active?'#fff':'rgba(255,255,255,.45)';
+    });
+  }
+
+  function startTimer(){
+    if(anns.length<=1)return;
+    clearInterval(timer);
+    timer=setInterval(function(){
+      var vis=visible();
+      if(vis.length>1){cur=(cur+1)%vis.length;render();}
+    },5000);
+  }
+
+  window.cgGo=function(i){cur=i;render();startTimer();};
+  window.cgNext=function(){var vis=visible();cur=(cur+1)%vis.length;render();startTimer();};
+  window.cgPrev=function(){var vis=visible();cur=(cur-1+vis.length)%vis.length;render();startTimer();};
+  window.cgDismiss=function(id){
+    localStorage.setItem('cg-ann-d-'+id,'1');
+    var vis=visible();
+    if(!vis.length){var w=document.getElementById('cg-ann-wrap');if(w){w.style.transition='max-height .3s,opacity .3s';w.style.maxHeight='0';w.style.opacity='0';setTimeout(function(){w.style.display='none';},320);} return;}
+    if(cur>=vis.length)cur=0;
+    render();
+  };
+
+  render();
+  startTimer();
 })();
-function dismissAnn(id){
-  localStorage.setItem('cg-ann-dismissed-'+id,'1');
-  var el=document.getElementById('cg-ann');
-  if(el){el.style.transition='max-height .3s,opacity .3s';el.style.maxHeight='0';el.style.opacity='0';setTimeout(function(){el.style.display='none';},350);}
-}
 </script>`;
 }
 
-function layout(title, body, user = null, extraHead = '', meta = {}, announcement = null) {
+function layout(title, body, user = null, extraHead = '', meta = {}, announcements = []) {
   const fullTitle = `${title} — ${SITE_NAME}`;
   const description = meta.description || 'Your trusted partner for education, migration, recruitment, and career services in Australia. Search CRICOS courses, get expert visa advice, and more.';
   const image = meta.image || DEFAULT_IMAGE;
@@ -249,7 +311,7 @@ ${extraHead}
     </div>
   </div>
 </nav>
-${announcementBanner(announcement)}
+${announcementBanner(announcements)}
 ${body}
 <!-- WhatsApp floating button -->
 <a href="https://wa.me/61405580047?text=Hi%20Careers%20Gateway%2C%20I%27d%20like%20to%20enquire%20about%20your%20services."
@@ -320,7 +382,7 @@ function esc(str) {
   return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
-function homePage(user, announcement = null) {
+function homePage(user, announcements = []) {
   return layout('Your Gateway to Success', `
   <div class="hero" style="padding:0;overflow:hidden">
     <div class="container" style="display:grid;grid-template-columns:1fr 420px;align-items:center;min-height:480px;padding:0 24px;gap:0">
@@ -526,7 +588,7 @@ function homePage(user, announcement = null) {
       </div>
     </div>
   </section>
-  `, user, '', { url: '/', description: 'Careers Gateway Australia — your trusted partner for education, migration, recruitment, RPL, and visa services. Search 26,000+ CRICOS courses and book a free consultation.', image: 'https://careersgateway.com.au/wp-content/uploads/2025/06/pexels-photo-1236421-1236421-scaled.jpg' }, announcement);
+  `, user, '', { url: '/', description: 'Careers Gateway Australia — your trusted partner for education, migration, recruitment, RPL, and visa services. Search 26,000+ CRICOS courses and book a free consultation.', image: 'https://careersgateway.com.au/wp-content/uploads/2025/06/pexels-photo-1236421-1236421-scaled.jpg' }, announcements);
 }
 
 function coursesPage(user, results, params, fromCache, error, savedCode = '') {

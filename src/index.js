@@ -53,10 +53,10 @@ app.use('*', async (c, next) => {
 
 // ── HOME ────────────────────────────────────────────────────────────────────
 app.get('/', async c => {
-  const ann = await c.env.DB.prepare(
-    `SELECT * FROM announcements WHERE active=1 AND (expires_at IS NULL OR expires_at > datetime('now')) ORDER BY created_at DESC LIMIT 1`
-  ).first().catch(() => null);
-  return c.html(homePage(c.get('user'), ann));
+  const { results: anns } = await c.env.DB.prepare(
+    `SELECT * FROM announcements WHERE active=1 AND (expires_at IS NULL OR expires_at > datetime('now')) ORDER BY created_at DESC LIMIT 10`
+  ).all().catch(() => ({ results: [] }));
+  return c.html(homePage(c.get('user'), anns || []));
 });
 
 // ── REGISTER ────────────────────────────────────────────────────────────────
