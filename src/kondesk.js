@@ -68,7 +68,7 @@ async function sendEmail(env, lead) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         personalizations: [{ to: [{ email: NOTIFY_EMAIL, name: 'Bijendra — Careers Gateway' }] }],
-        from: { email: 'noreply@careersgateway.com.au', name: 'Careers Gateway Portal' },
+        from: { email: 'contact@careersgateway.com.au', name: 'Careers Gateway Portal' },
         reply_to: { email: lead.email, name: lead.fullName },
         subject: `New Inquiry: ${lead.fullName} — ${lead.service || 'General'}`,
         content: [

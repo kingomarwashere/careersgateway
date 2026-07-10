@@ -227,7 +227,7 @@ ${body}
       <div class="footer-col">
         <img src="https://careersgateway.com.au/wp-content/uploads/2025/06/cropped-Screenshot-2025-06-15-at-1.59.23_PM-300x159-removebg-preview-192x192.png" alt="Careers Gateway" style="height:40px;width:auto;margin-bottom:14px;filter:brightness(0) invert(1)"><br>
         <p class="footer-contact">Your trusted partner for education, migration, and career services in Australia.<br><br>
-        📍 Sydney, NSW<br>📞 <a href="tel:+61283850414" style="color:#94a3b8">+61 2 8385 0414</a><br>📱 <a href="tel:+61405580047" style="color:#94a3b8">+61 405 580 047</a><br>✉️ info@careersgateway.com.au</p>
+        📍 Sydney, NSW<br>📞 <a href="tel:+61283850414" style="color:#94a3b8">+61 2 8385 0414</a><br>📱 <a href="tel:+61405580047" style="color:#94a3b8">+61 405 580 047</a><br>✉️ contact@careersgateway.com.au</p>
         <div style="display:flex;gap:14px;margin-top:16px">
           <a href="https://www.instagram.com/careersgatewayaus/" target="_blank" rel="noopener" aria-label="Instagram"
              style="width:36px;height:36px;background:#E1306C;border-radius:8px;display:flex;align-items:center;justify-content:center;transition:.15s"
@@ -824,7 +824,7 @@ function contactPage(user, params = {}, success = false, error = '') {
               <div>📍 Sydney, NSW, Australia</div>
               <div>📞 <a href="tel:+61283850414">+61 2 8385 0414</a></div>
               <div>📱 <a href="tel:+61405580047">+61 405 580 047</a></div>
-              <div>✉️ <a href="mailto:info@careersgateway.com.au">info@careersgateway.com.au</a></div>
+              <div>✉️ <a href="mailto:contact@careersgateway.com.au">contact@careersgateway.com.au</a></div>
               <div>🕐 Mon–Fri: 9am–6pm AEST</div>
             </div>
           </div>
