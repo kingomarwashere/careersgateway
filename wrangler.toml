@@ -23,5 +23,6 @@ id = "5b40ceec3c6446409351805028e63453"
 
 [vars]
 SITE_NAME = "Careers Gateway"
-CONTACT_EMAIL = "info@careersgateway.com.au"
+CONTACT_EMAIL = "Cgabijendra@gmail.com"
 KONPARE_KEY = "ViL_0iMMCdHrXNoEQKFm4P5092ISFcYzEyLmf5MFBKds7Hw5BmORaXu3oGsMB5Lk"
+GOOGLE_SHEET_WEBHOOK = ""
