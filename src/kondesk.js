@@ -1,13 +1,18 @@
 const NOTIFY_EMAIL = 'Cgabijendra@gmail.com';
 
 async function pushLeadToKondesk(env, lead) {
-  // Fire all three in parallel — Google Sheet, email, Kondesk
-  await Promise.allSettled([
+  const [sheetsResult, emailResult, kondeskResult] = await Promise.allSettled([
     pushToGoogleSheet(env, lead),
     sendEmail(env, lead),
     pushToKondesk(env, lead),
   ]);
-  return { success: true };
+
+  const sheetOk  = sheetsResult.status  === 'fulfilled';
+  const emailOk  = emailResult.status   === 'fulfilled';
+  const kondeskOk = kondeskResult.status === 'fulfilled' && kondeskResult.value === true;
+
+  // success = true if at least Google Sheet or email went through
+  return { success: sheetOk || emailOk, kondeskOk, sheetOk, emailOk };
 }
 
 async function pushToGoogleSheet(env, lead) {
@@ -83,7 +88,6 @@ async function pushToKondesk(env, lead) {
   const endpoints = [
     'https://app.konpare.online/api/leads',
     'https://app.konpare.online/api/v1/leads',
-    'https://app.kondesk.com/api/leads',
   ];
   const payload = {
     api_key: env.KONPARE_KEY,
@@ -101,9 +105,10 @@ async function pushToKondesk(env, lead) {
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${env.KONPARE_KEY}`, 'x-api-key': env.KONPARE_KEY },
         body: JSON.stringify(payload),
       });
-      if (res.ok) return;
+      if (res.ok) return true;
     } catch (_) {}
   }
+  return false;
 }
 
 export { pushLeadToKondesk };

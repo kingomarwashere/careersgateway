@@ -364,7 +364,8 @@ app.post('/contact', async c => {
   const lead = { fullName, email, phone, service, cricosCode, courseName: cricosName, provider: cricosProvider, message };
   const pushed = await pushLeadToKondesk(c.env, lead);
 
-  if (pushed.success) {
+  // Mark sent when Google Sheet or email confirmed delivery (Kondesk API not available)
+  if (pushed.sheetOk || pushed.emailOk) {
     await c.env.DB.prepare('UPDATE inquiries SET kondesk_sent=1 WHERE id=?')
       .bind(insert.meta.last_row_id).run();
   }
