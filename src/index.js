@@ -4,8 +4,12 @@ import { searchCricos } from './cricos.js';
 import { pushLeadToKondesk } from './kondesk.js';
 import {
   homePage, coursesPage, registerPage, loginPage,
-  dashboardPage, contactPage, healthInsurancePage, servicesPage, esc
+  dashboardPage, contactPage, healthInsurancePage, servicesPage, layout, esc
 } from './templates.js';
+import {
+  pointsPage, timelinePage, documentsPage, feesPage,
+  occupationsPage, stateCriteriaPage, processingTimesPage, englishPage, studentFundPage
+} from './visa-tracker.js';
 
 const app = new Hono();
 
@@ -123,10 +127,140 @@ app.get('/dashboard/save', async c => {
   return c.redirect('/dashboard');
 });
 
+// ── VISA TRACKER: POINTS CALCULATOR ─────────────────────────────────────────
+app.get('/dashboard/points', async c => {
+  const user = c.get('user');
+  if (!user) return c.redirect('/login?redirect=/dashboard/points');
+  const profile = await c.env.DB.prepare('SELECT * FROM visa_profiles WHERE user_id=?').bind(user.id).first();
+  return c.html(layout('Points Calculator', pointsPage(user, profile, null), user));
+});
+
+app.post('/dashboard/points', async c => {
+  const user = c.get('user');
+  if (!user) return c.redirect('/login');
+  const form = await c.req.formData();
+  const p = {
+    occupation_anzsco: form.get('occupation_anzsco')||'',
+    occupation_name: form.get('occupation_name')||'',
+    visa_subclass: form.get('visa_subclass')||'',
+    age: parseInt(form.get('age'))||0,
+    english_level: form.get('english_level')||'',
+    education_level: form.get('education_level')||'',
+    aus_study_years: form.get('aus_study_years')||'none',
+    professional_year: form.get('professional_year')==='1'?1:0,
+    overseas_work_years: form.get('overseas_work_years')||'lt3',
+    aus_work_years: form.get('aus_work_years')||'lt1',
+    partner_skills: parseInt(form.get('partner_skills'))||0,
+    naati: form.get('naati')==='1'?1:0,
+    regional_study: form.get('regional_study')==='1'?1:0,
+    state_nomination: form.get('state_nomination')||'',
+  };
+  await c.env.DB.prepare(`INSERT INTO visa_profiles (user_id,occupation_anzsco,occupation_name,visa_subclass,age,english_level,education_level,aus_study_years,professional_year,overseas_work_years,aus_work_years,partner_skills,naati,regional_study,state_nomination,updated_at)
+    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,datetime('now'))
+    ON CONFLICT(user_id) DO UPDATE SET occupation_anzsco=excluded.occupation_anzsco,occupation_name=excluded.occupation_name,visa_subclass=excluded.visa_subclass,age=excluded.age,english_level=excluded.english_level,education_level=excluded.education_level,aus_study_years=excluded.aus_study_years,professional_year=excluded.professional_year,overseas_work_years=excluded.overseas_work_years,aus_work_years=excluded.aus_work_years,partner_skills=excluded.partner_skills,naati=excluded.naati,regional_study=excluded.regional_study,state_nomination=excluded.state_nomination,updated_at=datetime('now')`)
+    .bind(user.id,p.occupation_anzsco,p.occupation_name,p.visa_subclass,p.age,p.english_level,p.education_level,p.aus_study_years,p.professional_year,p.overseas_work_years,p.aus_work_years,p.partner_skills,p.naati,p.regional_study,p.state_nomination).run();
+  return c.html(layout('Points Calculator', pointsPage(user, p, 'Points saved!'), user));
+});
+
+// ── VISA TRACKER: TIMELINE ───────────────────────────────────────────────────
+app.get('/dashboard/timeline', async c => {
+  const user = c.get('user');
+  if (!user) return c.redirect('/login?redirect=/dashboard/timeline');
+  const { results } = await c.env.DB.prepare('SELECT * FROM case_timelines WHERE user_id=?').bind(user.id).all();
+  return c.html(layout('Visa Timeline', timelinePage(user, results, null), user));
+});
+
+app.post('/dashboard/timeline', async c => {
+  const user = c.get('user');
+  if (!user) return c.redirect('/login');
+  const form = await c.req.formData();
+  const { TIMELINE_STAGES } = await import('./visa-data.js');
+  for (const stage of TIMELINE_STAGES) {
+    const date = form.get(`date_${stage.key}`) || null;
+    const notes = form.get(`notes_${stage.key}`) || null;
+    if (date || notes) {
+      await c.env.DB.prepare(`INSERT INTO case_timelines (user_id,stage,milestone_date,notes,updated_at) VALUES (?,?,?,?,datetime('now'))
+        ON CONFLICT(user_id,stage) DO UPDATE SET milestone_date=excluded.milestone_date,notes=excluded.notes,updated_at=datetime('now')`)
+        .bind(user.id, stage.key, date||null, notes||null).run().catch(()=>{});
+    }
+  }
+  const { results } = await c.env.DB.prepare('SELECT * FROM case_timelines WHERE user_id=?').bind(user.id).all();
+  return c.html(layout('Visa Timeline', timelinePage(user, results, 'Timeline saved!'), user));
+});
+
+// ── VISA TRACKER: DOCUMENT EXPIRY ────────────────────────────────────────────
+app.get('/dashboard/documents', async c => {
+  const user = c.get('user');
+  if (!user) return c.redirect('/login?redirect=/dashboard/documents');
+  const { results } = await c.env.DB.prepare('SELECT * FROM document_expiries WHERE user_id=? ORDER BY expiry_date ASC').bind(user.id).all();
+  return c.html(layout('Document Expiry', documentsPage(user, results, null), user));
+});
+
+app.post('/dashboard/documents', async c => {
+  const user = c.get('user');
+  if (!user) return c.redirect('/login');
+  const form = await c.req.formData();
+  const preset = form.get('doc_label') || '';
+  const custom = (form.get('custom_label') || '').trim();
+  const label = custom || preset;
+  const expiry = form.get('expiry_date') || '';
+  if (label && expiry) {
+    await c.env.DB.prepare('INSERT INTO document_expiries (user_id,doc_type,doc_label,expiry_date) VALUES (?,?,?,?)')
+      .bind(user.id, preset, label, expiry).run();
+  }
+  return c.redirect('/dashboard/documents');
+});
+
+app.post('/dashboard/documents/delete', async c => {
+  const user = c.get('user');
+  if (!user) return c.redirect('/login');
+  const form = await c.req.formData();
+  const id = parseInt(form.get('id'));
+  if (id) await c.env.DB.prepare('DELETE FROM document_expiries WHERE id=? AND user_id=?').bind(id, user.id).run();
+  return c.redirect('/dashboard/documents');
+});
+
+// ── VISA TRACKER: STATIC TOOLS ───────────────────────────────────────────────
+app.get('/dashboard/fees', c => {
+  const user = c.get('user');
+  if (!user) return c.redirect('/login?redirect=/dashboard/fees');
+  return c.html(layout('VAC Fee Calculator', feesPage(user), user));
+});
+
+app.get('/dashboard/occupations', c => {
+  const user = c.get('user');
+  if (!user) return c.redirect('/login?redirect=/dashboard/occupations');
+  return c.html(layout('Occupation Search', occupationsPage(user, c.req.query('q')||''), user));
+});
+
+app.get('/dashboard/state-criteria', c => {
+  const user = c.get('user');
+  if (!user) return c.redirect('/login?redirect=/dashboard/state-criteria');
+  return c.html(layout('State Nomination Criteria', stateCriteriaPage(user), user));
+});
+
+app.get('/dashboard/processing-times', c => {
+  const user = c.get('user');
+  if (!user) return c.redirect('/login?redirect=/dashboard/processing-times');
+  return c.html(layout('Processing Times', processingTimesPage(user), user));
+});
+
+app.get('/dashboard/english', c => {
+  const user = c.get('user');
+  if (!user) return c.redirect('/login?redirect=/dashboard/english');
+  return c.html(layout('English Requirements', englishPage(user), user));
+});
+
+app.get('/dashboard/student-fund', c => {
+  const user = c.get('user');
+  if (!user) return c.redirect('/login?redirect=/dashboard/student-fund');
+  return c.html(layout('Student Fund Calculator', studentFundPage(user), user));
+});
+
+// ── PROFILE ──────────────────────────────────────────────────────────────────
 app.get('/dashboard/profile', async c => {
   const user = c.get('user');
   if (!user) return c.redirect('/login');
-  const { layout, esc } = await import('./templates.js');
   return c.html(layout('My Profile', `
     <section style="padding:40px 24px">
       <div class="container" style="max-width:560px">
