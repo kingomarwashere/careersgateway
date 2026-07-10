@@ -426,4 +426,83 @@ app.notFound(c => {
   return c.html(`<!DOCTYPE html><html><head><title>404 Not Found</title><meta name="viewport" content="width=device-width,initial-scale=1"></head><body style="font-family:Arial;text-align:center;padding:80px 24px;color:#1a2744"><h1 style="font-size:4rem">404</h1><p style="color:#64748b;margin:12px 0 24px">Page not found</p><a href="/" style="background:#1a5bb8;color:#fff;padding:10px 24px;border-radius:8px;text-decoration:none;font-weight:700">Go Home</a></body></html>`, 404);
 });
 
-export default app;
+// ── SCHEDULED: daily document expiry notifications ───────────────────────────
+async function scheduled(event, env, ctx) {
+  const today = new Date();
+  const in30  = new Date(today); in30.setDate(in30.getDate() + 30);
+  const in7   = new Date(today); in7.setDate(in7.getDate() + 7);
+
+  // Get all expiring documents with user details
+  const { results } = await env.DB.prepare(`
+    SELECT d.id, d.doc_label, d.expiry_date, d.user_id,
+           u.full_name, u.email, u.phone
+    FROM document_expiries d
+    JOIN users u ON u.id = d.user_id
+    WHERE d.expiry_date <= ?
+    ORDER BY d.expiry_date ASC
+  `).bind(in30.toISOString().split('T')[0]).all();
+
+  if (!results || results.length === 0) return;
+
+  // Group by urgency
+  const expired  = results.filter(d => new Date(d.expiry_date) < today);
+  const urgent   = results.filter(d => { const dt = new Date(d.expiry_date); return dt >= today && dt <= in7; });
+  const upcoming = results.filter(d => { const dt = new Date(d.expiry_date); return dt > in7 && dt <= in30; });
+
+  const fmt = d => new Date(d.expiry_date).toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' });
+  const row = d => `<tr><td style="padding:8px 12px;border-bottom:1px solid #f1f5f9">${d.doc_label}</td><td style="padding:8px 12px;border-bottom:1px solid #f1f5f9">${d.full_name}</td><td style="padding:8px 12px;border-bottom:1px solid #f1f5f9"><a href="mailto:${d.email}">${d.email}</a></td><td style="padding:8px 12px;border-bottom:1px solid #f1f5f9">${d.phone||'—'}</td><td style="padding:8px 12px;border-bottom:1px solid #f1f5f9">${fmt(d)}</td></tr>`;
+
+  const section = (title, color, rows) => rows.length === 0 ? '' : `
+    <h3 style="color:${color};margin:20px 0 8px;font-size:1rem">${title} (${rows.length})</h3>
+    <table style="width:100%;border-collapse:collapse;font-size:.88rem;margin-bottom:16px">
+      <tr style="background:#f8faff"><th style="padding:8px 12px;text-align:left">Document</th><th style="padding:8px 12px;text-align:left">Client</th><th style="padding:8px 12px;text-align:left">Email</th><th style="padding:8px 12px;text-align:left">Phone</th><th style="padding:8px 12px;text-align:left">Expiry</th></tr>
+      ${rows.map(row).join('')}
+    </table>`;
+
+  const html = `
+    <div style="font-family:Arial,sans-serif;max-width:700px;color:#1a2744">
+      <div style="background:#1a5bb8;padding:20px 24px;border-radius:8px 8px 0 0">
+        <h2 style="color:#fff;margin:0;font-size:1rem">📄 Daily Document Expiry Report — Careers Gateway</h2>
+        <div style="color:rgba(255,255,255,.8);font-size:.85rem;margin-top:4px">${today.toLocaleDateString('en-AU',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}</div>
+      </div>
+      <div style="padding:20px 24px;background:#f8faff;border:1px solid #e8f0fe;border-top:none;border-radius:0 0 8px 8px">
+        ${section('🔴 Already Expired', '#dc2626', expired)}
+        ${section('🟠 Expiring within 7 days', '#d97706', urgent)}
+        ${section('🟡 Expiring within 30 days', '#ca8a04', upcoming)}
+        <div style="margin-top:16px;padding:12px;background:#dbeafe;border-radius:6px;font-size:.85rem;color:#1d4ed8">
+          ${results.length} document${results.length!==1?'s':''} across ${new Set(results.map(r=>r.user_id)).size} client${new Set(results.map(r=>r.user_id)).size!==1?'s':''} require attention.
+          <a href="https://careers.bored.investments/dashboard">View Dashboard →</a>
+        </div>
+      </div>
+    </div>`;
+
+  await fetch('https://api.mailchannels.net/tx/v1/send', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      personalizations: [{ to: [{ email: env.CONTACT_EMAIL, name: 'Careers Gateway Team' }] }],
+      from: { email: 'contact@careersgateway.com.au', name: 'Careers Gateway Portal' },
+      subject: `📄 ${results.length} document${results.length!==1?'s':''} expiring — Daily Expiry Report`,
+      content: [{ type: 'text/html', value: html }],
+    }),
+  }).catch(() => {});
+
+  // Also push to Google Sheet for record
+  if (env.GOOGLE_SHEET_WEBHOOK) {
+    await fetch(env.GOOGLE_SHEET_WEBHOOK, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        fullName: 'SYSTEM - Daily Expiry Report',
+        email: env.CONTACT_EMAIL,
+        phone: '',
+        service: `📄 Document Expiry Alert: ${results.length} documents`,
+        message: results.map(d => `${d.doc_label} | ${d.full_name} | ${d.email} | ${fmt(d)}`).join('\n'),
+        source: 'cron-daily-expiry',
+        submittedAt: today.toLocaleString('en-AU', { timeZone: 'Australia/Sydney' }),
+      }),
+    }).catch(() => {});
+  }
+}
+
+export default { fetch: app.fetch, scheduled };

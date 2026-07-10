@@ -350,7 +350,12 @@ export function feesPage(user) {
           <div style="border-left:2px solid #d1d9e8"><div style="font-size:.8rem;color:#64748b">Total VAC</div><div class="fee-total" id="vac-total">—</div></div>
         </div>
         <div id="vac-note" style="font-size:.82rem;color:#64748b"></div>
-        <div style="font-size:.78rem;color:#94a3b8;margin-top:8px">Figures in AUD. VAC fees are subject to change; verify at homeaffairs.gov.au before lodging.</div>
+        <div style="font-size:.78rem;color:#94a3b8;margin-top:8px">
+          Figures in AUD. Fees current as at <strong>1 July 2025</strong> (2025–26 financial year).
+          Fees increase annually on 1 July — always
+          <a href="https://immi.homeaffairs.gov.au/visas/getting-a-visa/fees-and-charges/current-visa-pricing" target="_blank" style="color:#1a5bb8">verify at homeaffairs.gov.au</a>
+          before lodging.
+        </div>
       </div>
     </div>
 

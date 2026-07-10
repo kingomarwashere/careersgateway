@@ -93,23 +93,25 @@ export function calcPoints(profile) {
   return { total: pts, breakdown };
 }
 
-// ── VAC FEES ─────────────────────────────────────────────────────────────────
+// ── VAC FEES — updated 1 July 2025 (2025-26 financial year) ──────────────────
+// Source: Department of Home Affairs — immi.homeaffairs.gov.au/visas/fees
+// Fees increase annually on 1 July. Always verify before lodging.
 export const VAC_FEES = [
-  { subclass: '189', name: 'Skilled Independent',        primary: 4770, secondary: 2385, child: 1195 },
-  { subclass: '190', name: 'Skilled Nominated',          primary: 4770, secondary: 2385, child: 1195 },
-  { subclass: '491', name: 'Skilled Work Regional',      primary: 4770, secondary: 2385, child: 1195 },
-  { subclass: '186', name: 'Employer Nomination (ENS)',  primary: 4770, secondary: 2385, child: 1195 },
-  { subclass: '187', name: 'Regional Sponsored (RSMS)',  primary: 4770, secondary: 2385, child: 1195 },
-  { subclass: '482', name: 'Temporary Skill Shortage',   primary: 3115, secondary: 1560, child: 1560 },
-  { subclass: '494', name: 'Skilled Employer Sponsored Regional', primary: 4770, secondary: 2385, child: 1195 },
-  { subclass: '500', name: 'Student Visa',               primary: 710,  secondary: 355,  child: 355  },
-  { subclass: '485', name: 'Graduate Temporary',         primary: 1895, secondary: 950,  child: 475  },
-  { subclass: '820', name: 'Partner (onshore)',          primary: 8850, secondary: 4425, child: 0   },
-  { subclass: '801', name: 'Partner (permanent onshore)',primary: 0,    secondary: 0,    child: 0, note: 'No additional fee if applying with 820' },
-  { subclass: '309', name: 'Partner (offshore)',         primary: 8850, secondary: 4425, child: 0   },
-  { subclass: '100', name: 'Partner (permanent offshore)',primary: 0,   secondary: 0,    child: 0, note: 'No additional fee if applying with 309' },
-  { subclass: '600', name: 'Visitor Visa',               primary: 190,  secondary: 190,  child: 190 },
-  { subclass: '407', name: 'Training Visa',              primary: 335,  secondary: 170,  child: 170 },
+  { subclass: '189', name: 'Skilled Independent',               primary: 4990, secondary: 2495, child: 1250 },
+  { subclass: '190', name: 'Skilled Nominated',                  primary: 4990, secondary: 2495, child: 1250 },
+  { subclass: '491', name: 'Skilled Work Regional',              primary: 4990, secondary: 2495, child: 1250 },
+  { subclass: '186', name: 'Employer Nomination (ENS)',           primary: 4990, secondary: 2495, child: 1250 },
+  { subclass: '187', name: 'Regional Sponsored (RSMS)',           primary: 4990, secondary: 2495, child: 1250 },
+  { subclass: '482', name: 'Temporary Skill Shortage (TSS)',      primary: 3270, secondary: 1635, child: 1635 },
+  { subclass: '494', name: 'Skilled Employer Sponsored Regional', primary: 4990, secondary: 2495, child: 1250 },
+  { subclass: '500', name: 'Student Visa',                        primary: 750,  secondary: 375,  child: 375  },
+  { subclass: '485', name: 'Graduate Temporary',                  primary: 1985, secondary: 995,  child: 500  },
+  { subclass: '820', name: 'Partner (onshore)',                   primary: 9265, secondary: 4635, child: 0,   note: 'Includes 801 permanent component' },
+  { subclass: '801', name: 'Partner (permanent onshore)',         primary: 0,    secondary: 0,    child: 0,   note: 'No additional fee if applying with 820' },
+  { subclass: '309', name: 'Partner (offshore)',                  primary: 9265, secondary: 4635, child: 0    },
+  { subclass: '100', name: 'Partner (permanent offshore)',        primary: 0,    secondary: 0,    child: 0,   note: 'No additional fee if applying with 309' },
+  { subclass: '600', name: 'Visitor Visa',                        primary: 195,  secondary: 195,  child: 195  },
+  { subclass: '407', name: 'Training Visa',                       primary: 350,  secondary: 175,  child: 175  },
 ];
 
 // ── PROCESSING TIMES ──────────────────────────────────────────────────────────
