@@ -1,0 +1,21 @@
+name = "careersgateway"
+main = "src/index.js"
+compatibility_date = "2024-11-01"
+compatibility_flags = ["nodejs_compat"]
+
+[[custom_domains]]
+pattern = "careers.bored.investments"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "careersgateway-db"
+database_id = "d898aeb4-5568-48d5-ba20-4244e467b5de"
+
+[[kv_namespaces]]
+binding = "SESSIONS"
+id = "5b40ceec3c6446409351805028e63453"
+
+[vars]
+SITE_NAME = "Careers Gateway"
+CONTACT_EMAIL = "info@careersgateway.com.au"
+KONPARE_KEY = "ViL_0iMMCdHrXNoEQKFm4P5092ISFcYzEyLmf5MFBKds7Hw5BmORaXu3oGsMB5Lk"

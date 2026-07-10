@@ -1,0 +1,17 @@
+{
+  "name": "careersgateway",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "db:migrate": "wrangler d1 execute careersgateway-db --file=./migrations/001_init.sql"
+  },
+  "dependencies": {
+    "hono": "^4.12.28"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20260702.1",
+    "wrangler": "^3.114.17"
+  }
+}
