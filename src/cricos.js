@@ -1,105 +1,95 @@
-const CRICOS_BASE = 'https://cricos.education.gov.au';
-const CACHE_TTL_HOURS = 24;
-
-async function fetchViewState() {
-  const res = await fetch(`${CRICOS_BASE}/Course/CourseSearch.aspx`, {
-    headers: {
-      'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-      'Accept': 'text/html,application/xhtml+xml',
-    }
-  });
-  const html = await res.text();
-  const cookies = res.headers.get('set-cookie') || '';
-
-  const vs = (html.match(/id="__VIEWSTATE"\s+value="([^"]+)"/) || [])[1] || '';
-  const vsgen = (html.match(/id="__VIEWSTATEGENERATOR"\s+value="([^"]+)"/) || [])[1] || '';
-  const ev = (html.match(/id="__EVENTVALIDATION"\s+value="([^"]+)"/) || [])[1] || '';
-  return { vs, vsgen, ev, cookies };
-}
-
-function parseCricosResults(html) {
-  const courses = [];
-  // Match table rows in the results table
-  const tableMatch = html.match(/<table[^>]*id="[^"]*grd[^"]*"[^>]*>([\s\S]*?)<\/table>/i)
-    || html.match(/<table[^>]*class="[^"]*result[^"]*"[^>]*>([\s\S]*?)<\/table>/i)
-    || html.match(/<table[^>]*>([\s\S]*?)<\/table>/gi);
-
-  if (!tableMatch) return courses;
-
-  const tableHtml = Array.isArray(tableMatch) ? tableMatch.find(t => t.includes('CRICOS') || t.includes('Course')) || tableMatch[0] : tableMatch[1] || tableMatch[0];
-
-  // Extract all <tr> rows with <td> cells
-  const rows = tableHtml.match(/<tr[^>]*>([\s\S]*?)<\/tr>/gi) || [];
-  for (const row of rows) {
-    const cells = (row.match(/<td[^>]*>([\s\S]*?)<\/td>/gi) || [])
-      .map(td => td.replace(/<[^>]+>/g, '').replace(/&amp;/g, '&').replace(/&nbsp;/g, ' ').trim());
-    if (cells.length >= 4 && cells.some(c => c.length > 2)) {
-      courses.push({
-        cricosCode: cells[0] || '',
-        courseName: cells[1] || '',
-        provider: cells[2] || '',
-        state: cells[3] || '',
-        duration: cells[4] || '',
-        fee: cells[5] || '',
-      });
-    }
-  }
-  return courses.filter(c => c.cricosCode || c.courseName);
-}
+// CRICOS search using the official data.gov.au dataset imported into D1.
+// Data is refreshed monthly from:
+// https://data.gov.au/data/dataset/e5ae7059-bfa8-4fa4-a5c0-c13cf3520193
 
 async function searchCricos(env, params) {
-  const cacheKey = JSON.stringify(params);
-  const cached = await env.DB.prepare('SELECT results_json, cached_at FROM cricos_cache WHERE cache_key = ?')
-    .bind(cacheKey).first();
+  const { courseName, cricosCode, state, courseLevel } = params;
+  const limit = 50;
 
-  if (cached) {
-    const ageHours = (Date.now() - new Date(cached.cached_at).getTime()) / 3600000;
-    if (ageHours < CACHE_TTL_HOURS) {
-      return { results: JSON.parse(cached.results_json), fromCache: true };
-    }
+  // Build WHERE clauses
+  const conditions = ['c.expired = 0'];
+  const bindings = [];
+
+  if (courseName && courseName.trim()) {
+    conditions.push("c.course_name LIKE ?");
+    bindings.push(`%${courseName.trim()}%`);
+  }
+  if (cricosCode && cricosCode.trim()) {
+    conditions.push("c.course_code LIKE ?");
+    bindings.push(`%${cricosCode.trim()}%`);
+  }
+  if (courseLevel && courseLevel.trim()) {
+    // Match against course_level field
+    const levelMap = {
+      '1': 'Bachelor',
+      '2': 'Master',
+      '3': 'Doctoral',
+      '4': 'Diploma',
+      '5': 'Certificate',
+      '6': 'Advanced Diploma',
+      '7': 'Graduate Certificate',
+      '8': 'Graduate Diploma',
+    };
+    const levelText = levelMap[courseLevel] || courseLevel;
+    conditions.push("c.course_level LIKE ?");
+    bindings.push(`%${levelText}%`);
   }
 
-  try {
-    const { vs, vsgen, ev, cookies } = await fetchViewState();
+  const whereClause = conditions.join(' AND ');
 
-    const formData = new URLSearchParams({
-      '__VIEWSTATE': vs,
-      '__VIEWSTATEGENERATOR': vsgen,
-      '__EVENTVALIDATION': ev,
-      'ctl00$ContentPlaceHolder1$txtCourseName': params.courseName || '',
-      'ctl00$ContentPlaceHolder1$txtCRICOSCourseCode': params.cricosCode || '',
-      'ctl00$ContentPlaceHolder1$ddlState': params.state || '',
-      'ctl00$ContentPlaceHolder1$ddlCourseLevel': params.courseLevel || '',
-      'ctl00$ContentPlaceHolder1$ddlBroadField': params.broadField || '',
-      'ctl00$ContentPlaceHolder1$ddlNarrowField': '',
-      'ctl00$ContentPlaceHolder1$ddlDetailedField': '',
-      'ctl00$ContentPlaceHolder1$ddlLanguage': '',
-      'ctl00$ContentPlaceHolder1$btnSearch': 'Search',
-    });
+  let query, results;
 
-    const res = await fetch(`${CRICOS_BASE}/Course/CourseSearch.aspx`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-        'Referer': `${CRICOS_BASE}/Course/CourseSearch.aspx`,
-        'Cookie': cookies,
-      },
-      body: formData.toString(),
-    });
-
-    const html = await res.text();
-    const results = parseCricosResults(html);
-
-    await env.DB.prepare(
-      'INSERT OR REPLACE INTO cricos_cache (cache_key, results_json, cached_at) VALUES (?, ?, datetime("now"))'
-    ).bind(cacheKey, JSON.stringify(results)).run();
-
-    return { results, fromCache: false };
-  } catch (e) {
-    if (cached) return { results: JSON.parse(cached.results_json), fromCache: true, stale: true };
-    return { results: [], error: e.message };
+  if (state && state.trim()) {
+    // Join with locations to filter by state
+    query = `
+      SELECT DISTINCT c.course_code, c.course_name, c.institution_name, c.course_level,
+             c.duration_weeks, c.tuition_fee, c.provider_code, c.vet_national_code,
+             l.location_state, l.location_city
+      FROM cricos_courses c
+      INNER JOIN cricos_course_locations l ON c.course_code = l.course_code
+      WHERE ${whereClause}
+        AND l.location_state = ?
+      ORDER BY c.institution_name, c.course_name
+      LIMIT ${limit}
+    `;
+    bindings.push(state.trim());
+  } else {
+    // No state filter — use course_locations for a representative state
+    query = `
+      SELECT c.course_code, c.course_name, c.institution_name, c.course_level,
+             c.duration_weeks, c.tuition_fee, c.provider_code, c.vet_national_code,
+             (SELECT l.location_state FROM cricos_course_locations l WHERE l.course_code = c.course_code LIMIT 1) as location_state,
+             (SELECT l.location_city FROM cricos_course_locations l WHERE l.course_code = c.course_code LIMIT 1) as location_city
+      FROM cricos_courses c
+      WHERE ${whereClause}
+      ORDER BY c.institution_name, c.course_name
+      LIMIT ${limit}
+    `;
   }
+
+  const stmt = env.DB.prepare(query).bind(...bindings);
+  const raw = await stmt.all();
+  results = (raw.results || []).map(row => ({
+    cricosCode: row.course_code,
+    courseName: row.course_name,
+    provider: row.institution_name,
+    providerCode: row.provider_code,
+    level: row.course_level,
+    state: row.location_state || '',
+    city: row.location_city || '',
+    durationWeeks: row.duration_weeks,
+    tuitionFee: row.tuition_fee,
+    vetCode: row.vet_national_code,
+  }));
+
+  return { results, fromCache: false };
 }
 
-export { searchCricos };
+async function getCricosStats(env) {
+  const r = await env.DB.prepare(
+    'SELECT COUNT(*) as total, COUNT(DISTINCT institution_name) as providers FROM cricos_courses WHERE expired=0'
+  ).first();
+  return r;
+}
+
+export { searchCricos, getCricosStats };

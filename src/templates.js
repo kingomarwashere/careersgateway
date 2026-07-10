@@ -230,7 +230,7 @@ function homePage(user) {
       <div><div class="stat-num">5,000+</div><div class="stat-label">Clients Helped</div></div>
       <div><div class="stat-num">98%</div><div class="stat-label">Success Rate</div></div>
       <div><div class="stat-num">15+</div><div class="stat-label">Years Experience</div></div>
-      <div><div class="stat-num">50+</div><div class="stat-label">Partner Institutions</div></div>
+      <div><div class="stat-num">1,500+</div><div class="stat-label">CRICOS Institutions</div></div>
     </div>
   </div>
 
@@ -288,6 +288,9 @@ function homePage(user) {
               <option value="3">Doctoral Degree</option>
               <option value="4">Diploma</option>
               <option value="5">Certificate</option>
+              <option value="6">Advanced Diploma</option>
+              <option value="7">Graduate Certificate</option>
+              <option value="8">Graduate Diploma</option>
             </select>
           </div>
           <div style="display:flex;align-items:flex-end">
@@ -423,9 +426,11 @@ function coursesPage(user, results, params, fromCache, error) {
               <div style="color:#64748b;font-size:.9rem;margin-bottom:6px">${esc(c.provider || '')}</div>
               <div class="course-meta">
                 ${c.cricosCode ? `<span class="badge badge-blue">CRICOS: ${esc(c.cricosCode)}</span>` : ''}
-                ${c.state ? `<span class="badge badge-gray">📍 ${esc(c.state)}</span>` : ''}
-                ${c.duration ? `<span class="badge badge-gray">⏱ ${esc(c.duration)}</span>` : ''}
-                ${c.fee ? `<span class="badge badge-green">💰 ${esc(c.fee)}</span>` : ''}
+                ${c.level ? `<span class="badge badge-gray">${esc(c.level)}</span>` : ''}
+                ${(c.city || c.state) ? `<span class="badge badge-gray">📍 ${esc([c.city,c.state].filter(Boolean).join(', '))}</span>` : ''}
+                ${c.durationWeeks ? `<span class="badge badge-gray">⏱ ${esc(String(c.durationWeeks))} weeks</span>` : ''}
+                ${c.tuitionFee ? `<span class="badge badge-green">💰 ${esc(c.tuitionFee)}</span>` : ''}
+                ${c.vetCode ? `<span class="badge badge-gray">VET: ${esc(c.vetCode)}</span>` : ''}
               </div>
             </div>
             <div class="course-actions">
