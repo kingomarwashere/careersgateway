@@ -568,8 +568,8 @@ function registerPage(error, values = {}) {
             <input type="text" name="full_name" required placeholder="Your full name" value="${esc(values.full_name||'')}">
           </div>
           <div class="form-group">
-            <label>Phone</label>
-            <input type="tel" name="phone" placeholder="+61 4XX XXX XXX" value="${esc(values.phone||'')}">
+            <label>Phone *</label>
+            <input type="tel" name="phone" required placeholder="+61 4XX XXX XXX" value="${esc(values.phone||'')}">
           </div>
         </div>
         <div class="form-group">

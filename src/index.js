@@ -33,7 +33,7 @@ app.post('/register', async c => {
   const confirm = form.get('confirm_password') || '';
   const vals = { full_name: fullName, email, phone };
 
-  if (!fullName || !email || !password) return c.html(registerPage('All required fields must be filled in.', vals));
+  if (!fullName || !email || !phone || !password) return c.html(registerPage('All required fields must be filled in, including phone number.', vals));
   if (password.length < 8) return c.html(registerPage('Password must be at least 8 characters.', vals));
   if (password !== confirm) return c.html(registerPage('Passwords do not match.', vals));
 
