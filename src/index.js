@@ -563,6 +563,7 @@ app.get('/admin/dashboard', async c => {
     <td style="max-width:200px">${i.message ? i.message.slice(0,120) + (i.message.length>120?'…':'') : '—'}</td>
     <td><span class="badge ${i.kondesk_sent?'badge-green':'badge-gray'}">${i.kondesk_sent?'Sent':'Pending'}</span></td>
     <td style="white-space:nowrap">${fmtDate(i.created_at)}</td>
+    <td><form method="POST" action="/admin/inquiries/${i.id}/delete" onsubmit="return confirm('Delete this enquiry?')"><button type="submit" class="btn btn-sm btn-danger">Delete</button></form></td>
   </tr>`).join('');
 
   const annRows = announcements.map(a => `<tr>
@@ -610,8 +611,8 @@ app.get('/admin/dashboard', async c => {
     <div class="card">
       <h2>📨 All Inquiries (${inquiries.length})</h2>
       <div style="overflow-x:auto">
-        <table><thead><tr><th>#</th><th>Name</th><th>Email</th><th>Phone</th><th>Service</th><th>Course</th><th>Message</th><th>CRM</th><th>Date (AEST)</th></tr></thead>
-        <tbody>${inqRows || '<tr><td colspan="9" style="text-align:center;color:#94a3b8;padding:24px">No inquiries yet</td></tr>'}</tbody></table>
+        <table><thead><tr><th>#</th><th>Name</th><th>Email</th><th>Phone</th><th>Service</th><th>Course</th><th>Message</th><th>CRM</th><th>Date (AEST)</th><th>Actions</th></tr></thead>
+        <tbody>${inqRows || '<tr><td colspan="10" style="text-align:center;color:#94a3b8;padding:24px">No inquiries yet</td></tr>'}</tbody></table>
       </div>
     </div>
   `));
@@ -644,6 +645,13 @@ app.post('/admin/announcements/:id/delete', async c => {
   if (!isAdmin(c)) return c.redirect('/admin');
   const id = parseInt(c.req.param('id'));
   await c.env.DB.prepare(`DELETE FROM announcements WHERE id=?`).bind(id).run();
+  return c.redirect('/admin/dashboard');
+});
+
+app.post('/admin/inquiries/:id/delete', async c => {
+  if (!isAdmin(c)) return c.redirect('/admin');
+  const id = parseInt(c.req.param('id'));
+  await c.env.DB.prepare(`DELETE FROM inquiries WHERE id=?`).bind(id).run();
   return c.redirect('/admin/dashboard');
 });
 
