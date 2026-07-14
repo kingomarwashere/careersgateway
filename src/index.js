@@ -563,7 +563,7 @@ app.get('/admin/dashboard', async c => {
     <td style="max-width:200px">${i.message ? i.message.slice(0,120) + (i.message.length>120?'…':'') : '—'}</td>
     <td><span class="badge ${i.kondesk_sent?'badge-green':'badge-gray'}">${i.kondesk_sent?'Sent':'Pending'}</span></td>
     <td style="white-space:nowrap">${fmtDate(i.created_at)}</td>
-    <td><form method="POST" action="/admin/inquiries/${i.id}/delete" onsubmit="return confirm('Delete this enquiry?')"><button type="submit" class="btn btn-sm btn-danger">Delete</button></form></td>
+    <td style="white-space:nowrap"><form method="POST" action="/admin/inquiries/${i.id}/delete" onsubmit="return confirm('Delete this enquiry?')"><button type="submit" class="btn btn-sm btn-danger">Delete</button></form></td>
   </tr>`).join('');
 
   const annRows = announcements.map(a => `<tr>
